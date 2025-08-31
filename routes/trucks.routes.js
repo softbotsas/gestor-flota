@@ -1,22 +1,25 @@
-// routes/trucks.routes.js
+// routes/trucks.routes.js (CORREGIDO)
+
 const { Router } = require('express');
 const router = Router();
 
-// Importamos los métodos del controlador
 const { 
   renderTrucksPage, 
   createTruck,
-  renderTruckDetails // <-- AÑADIMOS EL NUEVO MÉTODO
+  renderTruckDetails,
+  updateTruck,      // <-- AHORA SÍ ESTÁ IMPORTADO
+  deleteTruck       // <-- AHORA SÍ ESTÁ IMPORTADO
 } = require('../controllers/truck.controller');
 
-// Ruta para mostrar la página con el formulario y la lista de camiones
+
+// --- Rutas que ya tenías ---
 router.get('/', renderTrucksPage);
-
-// Ruta para manejar el envío del formulario y crear un nuevo camión
 router.post('/add', createTruck);
-
-// RUTA PARA VER EL DETALLE DE UN SOLO CAMIÓN <-- AÑADIMOS ESTA NUEVA RUTA
-// El ':id' es un parámetro dinámico. Express capturará lo que venga en esa parte de la URL.
 router.get('/:id', renderTruckDetails);
+
+// --- Nuevas rutas ---
+// Ahora, cuando se use 'updateTruck' y 'deleteTruck', ya no serán 'undefined'.
+router.put('/update/:id', updateTruck);
+router.delete('/delete/:id', deleteTruck);
 
 module.exports = router;

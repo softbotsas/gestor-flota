@@ -1,5 +1,4 @@
 <% layout('layouts/main') %>
-<!-- views/trucks/all-trucks.ejs -->
 
 <!-- Fila de Encabezado y Botón de Acción -->
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -31,10 +30,19 @@
               </div>
             </div>
           </div>
-          <div class="card-footer bg-white border-top-0 text-end">
+          <!-- ======================================================= -->
+          <!-- ================ SECCIÓN ACTUALIZADA AQUÍ =============== -->
+          <!-- ======================================================= -->
+          <div class="card-footer bg-white border-top-0 d-flex justify-content-end gap-2">
             <a href="/trucks/<%= truck._id %>" class="btn btn-outline-secondary btn-sm">
               <i class="fas fa-info-circle me-1"></i> Ver Historial
             </a>
+            <!-- Formulario para Eliminar el Camión (con confirmación clara) -->
+            <form action="/trucks/delete/<%= truck._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿SEGURO que quieres eliminar este camión y TODO su historial de mantenimiento? Esta acción es IRREVERSIBLE.');">
+              <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-trash me-1"></i> Eliminar
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -50,7 +58,7 @@
 
 
 <!-- ======================================================= -->
-<!-- ==================== MODAL DEL FORMULARIO ============= -->
+<!-- ============= MODAL PARA AÑADIR CAMIÓN ================ -->
 <!-- ======================================================= -->
 <div class="modal fade" id="addTruckModal" tabindex="-1" aria-labelledby="addTruckModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

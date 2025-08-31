@@ -1,5 +1,5 @@
 // models/Maintenance.js
-// VERSIÓN FINAL Y COMPLETA CON EL CAMPO PARA "SOFT DELETE"
+// VERSIÓN FINAL Y COMPLETA CON "SOFT DELETE" Y RECORDATORIOS
 
 const { Schema, model } = require('mongoose');
 
@@ -7,18 +7,18 @@ const MaintenanceSchema = new Schema({
   // Referencia al camión al que pertenece este mantenimiento.
   truck: {
     type: Schema.Types.ObjectId,
-    ref: 'Truck', // Hace referencia al modelo 'Truck'
+    ref: 'Truck',
     required: true
   },
-  // El tipo de operación (ej: "Cambio de Aceite"). Ya no es un enum.
+  // El tipo de operación (ej: "Cambio de Aceite").
   type: {
     type: String,
     required: true,
   },
-  // La marca del repuesto utilizado (ej: "Casarella").
+  // La marca del repuesto utilizado.
   brand: {
     type: String,
-    required: false, // Opcional, ya que no siempre aplica.
+    required: false,
     trim: true
   },
   // El kilometraje del vehículo en el momento del servicio.
@@ -36,6 +36,13 @@ const MaintenanceSchema = new Schema({
     type: Number,
     required: true
   },
+    // ¡NUEVO CAMPO! Para la moneda
+  currency: {
+    type: String,
+    required: true,
+    enum: ['USD', 'GTQ'], // Dólares Americanos, Quetzales de Guatemala
+    default: 'GTQ'
+  },
   // Notas o detalles adicionales.
   details: {
     type: String,
@@ -46,22 +53,25 @@ const MaintenanceSchema = new Schema({
     type: String,
     required: true
   },
-  // Fecha para el próximo servicio (opcional, para recordatorios).
+  // Fecha para el próximo servicio (opcional).
   nextServiceDate: {
     type: Date,
     required: false
   },
   
-  // =======================================================
-  // ============= CAMPO CLAVE PARA EL BORRADO SUAVE =======
-  // =======================================================
-  // Este campo determinará si el registro es visible para el usuario.
+  // ¡NUEVO! Días de anticipación para el recordatorio.
+  reminderDays: {
+    type: Number,
+    required: false
+  },
+  
+  // Campo para el borrado suave (soft delete).
   isActive: {
     type: Boolean,
     default: true // Por defecto, todos los nuevos registros estarán activos.
   }
 }, {
-  // Esto añade automáticamente los campos createdAt y updatedAt a cada registro.
+  // Añade automáticamente los campos createdAt y updatedAt.
   timestamps: true
 });
 

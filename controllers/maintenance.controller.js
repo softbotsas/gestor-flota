@@ -1,18 +1,14 @@
 // controllers/maintenance.controller.js
-// VERSIÓN FINAL, SIMPLIFICADA Y CORREGIDA. USA EL MÓDULO 'fs' NATIVO DE NODE.JS
+// VERSIÓN FINAL CON "SOFT DELETE", RECORDATORIOS Y MONEDA
 
 const maintenanceCtrl = {};
 const Maintenance = require('../models/Maintenance');
 
-// Usamos el módulo 'fs' (File System) que viene con Node.js.
-// '.promises' nos permite usar async/await con él, que es más limpio.
-const fs = require('fs').promises; 
-const path = require('path');
-
 // --- MÉTODO PARA CREAR UN NUEVO REGISTRO ---
 maintenanceCtrl.createMaintenance = async (req, res) => {
   const { truckId } = req.params;
-  const { type, date, cost, details, nextServiceDate, mileage, brand } = req.body;
+  // Añadimos 'currency' a los datos que recibimos del formulario.
+  const { type, date, cost, details, nextServiceDate, mileage, brand, reminderDays, currency } = req.body;
 
   if (!req.file) {
     return res.status(400).send('Error: No se ha subido ninguna imagen.');
@@ -24,7 +20,9 @@ maintenanceCtrl.createMaintenance = async (req, res) => {
       type, date, cost, details,
       nextServiceDate: nextServiceDate || null,
       receiptImage: '/uploads/' + req.file.filename,
-      mileage, brand
+      mileage, brand,
+      reminderDays: reminderDays || null,
+      currency // Guardamos el nuevo campo de moneda.
     });
 
     await newMaintenance.save();
@@ -38,7 +36,8 @@ maintenanceCtrl.createMaintenance = async (req, res) => {
 // --- MÉTODO PARA ACTUALIZAR UN REGISTRO ---
 maintenanceCtrl.updateMaintenance = async (req, res) => {
   const { id } = req.params;
-  const { type, date, cost, details, nextServiceDate, mileage, brand } = req.body;
+  // Añadimos 'currency' a los datos que recibimos del formulario.
+  const { type, date, cost, details, nextServiceDate, mileage, brand, reminderDays, currency } = req.body;
 
   try {
     const maintenanceToUpdate = await Maintenance.findById(id);
@@ -46,15 +45,10 @@ maintenanceCtrl.updateMaintenance = async (req, res) => {
       return res.status(404).send("Registro no encontrado para actualizar.");
     }
 
-    let updateData = { type, date, cost, details, nextServiceDate, mileage, brand };
+    // Añadimos el nuevo campo al objeto de datos a actualizar.
+    let updateData = { type, date, cost, details, nextServiceDate, mileage, brand, reminderDays: reminderDays || null, currency };
 
     if (req.file) {
-      const oldImagePath = path.resolve('./public' + maintenanceToUpdate.receiptImage);
-      try {
-        await fs.unlink(oldImagePath);
-      } catch (err) {
-        console.log("No se pudo borrar la imagen anterior:", oldImagePath);
-      }
       updateData.receiptImage = '/uploads/' + req.file.filename;
     }
 
@@ -66,45 +60,21 @@ maintenanceCtrl.updateMaintenance = async (req, res) => {
   }
 };
 
-// --- MÉTODO PARA ELIMINAR UN REGISTRO (VERSIÓN ROBUSTA) ---
+// --- MÉTODO DE BORRADO SUAVE (SOFT DELETE) ---
 maintenanceCtrl.deleteMaintenance = async (req, res) => {
   const { id } = req.params;
-  let truckIdToRedirect = null;
-
   try {
-    // 1. Buscamos el registro ANTES de borrarlo para obtener su información.
     const maintenance = await Maintenance.findById(id);
-
-    if (!maintenance) {
-      return res.status(404).send('Registro no encontrado. Es posible que ya haya sido eliminado.');
-    }
-
-    // Guardamos el ID del camión para saber a dónde redirigir al final.
-    truckIdToRedirect = maintenance.truck;
-    const imagePath = path.resolve('./public' + maintenance.receiptImage);
-
-    // 2. Intentamos borrar el archivo de imagen.
-    try {
-      await fs.unlink(imagePath);
-    } catch (err) {
-      // Si el archivo no existe, no es un error crítico. Lo registramos y continuamos.
-      console.log(`No se encontró el archivo de imagen para borrar: ${imagePath}`);
-    }
-
-    // 3. Borramos el registro de la base de datos.
-    await Maintenance.findByIdAndDelete(id);
-
-    // 4. Redirigimos al usuario.
-    res.redirect(`/trucks/${truckIdToRedirect}`);
-
-  } catch (error) {
-    console.error("Error al eliminar el mantenimiento:", error);
-    // Si algo falla, intentamos redirigir si tenemos el ID, si no, mostramos un error.
-    if (truckIdToRedirect) {
-      res.redirect(`/trucks/${truckIdToRedirect}`);
+    
+    if (maintenance) {
+      await Maintenance.findByIdAndUpdate(id, { isActive: false });
+      return res.redirect(`/trucks/${maintenance.truck}`);
     } else {
-      res.status(500).send("Ocurrió un error en el servidor al intentar eliminar el registro.");
+      return res.status(404).send('Registro no encontrado.');
     }
+  } catch (error) {
+    console.error("Error al realizar el borrado suave:", error);
+    res.status(500).send("Ocurrió un error en el servidor.");
   }
 };
 

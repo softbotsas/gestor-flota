@@ -1,24 +1,14 @@
 <% layout('layouts/main') %>
 
 <!-- Encabezado de la Página de Detalles -->
-<!-- Encabezado de la Página de Detalles (ACTUALIZADO) -->
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <div>
-    <h1 class="h3 mb-0 text-gray-800">
-      <i class="fas fa-truck-moving text-danger"></i> 
-      Detalles del Camión
-    </h1>
+    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-truck-moving text-danger"></i> Detalles del Camión</h1>
     <p class="mb-0 text-muted"><%= truck.marca %> <%= truck.modelo %> - <strong><%= truck.placa %></strong></p>
   </div>
-  <!-- Contenedor para los botones de la derecha -->
   <div class="d-flex gap-2">
-    <!-- Botón para abrir el modal de edición del camión -->
-    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTruckModal">
-      <i class="fas fa-pencil-alt me-1"></i> Editar Ficha
-    </button>
-    <a href="/trucks" class="btn btn-sm btn-outline-secondary">
-      <i class="fas fa-arrow-left me-1"></i> Volver a la Flota
-    </a>
+    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTruckModal"><i class="fas fa-pencil-alt me-1"></i> Editar Ficha</button>
+    <a href="/trucks" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Volver a la Flota</a>
   </div>
 </div>
 
@@ -26,35 +16,15 @@
   <!-- Columna de Información Principal (Ficha Técnica) -->
   <div class="col-lg-4">
     <div class="card shadow mb-4">
-      <div class="card-header py-3 bg-dark text-white">
-        <h6 class="m-0 font-weight-bold">Ficha Técnica</h6>
-      </div>
+      <div class="card-header py-3 bg-dark text-white"><h6 class="m-0 font-weight-bold">Ficha Técnica</h6></div>
       <div class="card-body">
         <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Placa:</strong>
-            <span class="badge bg-dark fs-6"><%= truck.placa %></span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Marca:</strong>
-            <span><%= truck.marca %></span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Modelo:</strong>
-            <span><%= truck.modelo %></span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Año:</strong>
-            <span><%= truck.año %></span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Alias:</strong>
-            <span><%= truck.alias || 'No especificado' %></span>
-          </li>
-           <li class="list-group-item d-flex justify-content-between align-items-center">
-            <strong>Registrado el:</strong>
-            <span><%= new Date(truck.createdAt).toLocaleDateString('es-ES') %></span>
-          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Placa:</strong><span class="badge bg-dark fs-6"><%= truck.placa %></span></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Marca:</strong><span><%= truck.marca %></span></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Modelo:</strong><span><%= truck.modelo %></span></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Año:</strong><span><%= truck.año %></span></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Alias:</strong><span><%= truck.alias || 'No especificado' %></span></li>
+          <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Registrado el:</strong><span><%= new Date(truck.createdAt).toLocaleDateString('es-ES') %></span></li>
         </ul>
       </div>
     </div>
@@ -65,9 +35,7 @@
     <div class="card shadow mb-4">
       <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-danger">Historial de Operaciones</h6>
-        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal">
-          <i class="fas fa-plus me-1"></i> Registrar Operación
-        </button>
+        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal"><i class="fas fa-plus me-1"></i> Registrar Operación</button>
       </div>
       <div class="card-body">
         <% if (maintenances.length > 0) { %>
@@ -75,20 +43,17 @@
             <% maintenances.forEach(function(maint) { %>
               <div class="list-group-item py-3">
                 <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1 fw-bold">
-                    <%= maint.type %> 
-                    <% if (maint.brand) { %> <span class="badge bg-secondary fw-normal"><%= maint.brand %></span> <% } %>
-                  </h5>
+                  <h5 class="mb-1 fw-bold"><%= maint.type %> <% if (maint.brand) { %> <span class="badge bg-secondary fw-normal"><%= maint.brand %></span> <% } %></h5>
                   <small class="text-muted"><%= new Date(maint.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) %></small>
                 </div>
                 <p class="mb-1"><%= maint.details || 'Sin detalles adicionales.' %></p>
                 <% if (maint.mileage) { %><small class="text-muted"><strong>Kilometraje:</strong> <%= maint.mileage.toLocaleString('es-ES') %> km</small><% } %>
                 <div class="d-flex justify-content-between align-items-center mt-2">
-                  <strong class="text-danger fs-5">$<%= maint.cost.toFixed(2) %></strong>
+                  <strong class="text-danger fs-5"><%= maint.currency === 'GTQ' ? 'Q' : '$' %><%= maint.cost.toFixed(2) %></strong>
                   <div>
                     <a href="<%= maint.receiptImage %>" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver Comprobante"><i class="fas fa-receipt"></i></a>
-                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editMaintenanceModal" data-id="<%= maint._id %>" data-type="<%= maint.type %>" data-brand="<%= maint.brand || '' %>" data-mileage="<%= maint.mileage || '' %>" data-date="<%= new Date(maint.date).toISOString().split('T')[0] %>" data-cost="<%= maint.cost %>" data-details="<%= maint.details || '' %>" data-nextservicedate="<%= maint.nextServiceDate ? new Date(maint.nextServiceDate).toISOString().split('T')[0] : '' %>" title="Editar Registro"><i class="fas fa-pencil-alt"></i></button>
-                    <form action="/maintenance/delete/<%= maint._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro? Esta acción no se puede deshacer.');"><button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar Registro"><i class="fas fa-trash"></i></button></form>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editMaintenanceModal" data-id="<%= maint._id %>" data-type="<%= maint.type %>" data-brand="<%= maint.brand || '' %>" data-mileage="<%= maint.mileage || '' %>" data-date="<%= new Date(maint.date).toISOString().split('T')[0] %>" data-cost="<%= maint.cost %>" data-details="<%= maint.details || '' %>" data-nextservicedate="<%= maint.nextServiceDate ? new Date(maint.nextServiceDate).toISOString().split('T')[0] : '' %>" data-reminderdays="<%= maint.reminderDays || '' %>" data-currency="<%= maint.currency %>" title="Editar Registro"><i class="fas fa-pencil-alt"></i></button>
+                    <form action="/maintenance/delete/<%= maint._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro?');"><button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar Registro"><i class="fas fa-trash"></i></button></form>
                   </div>
                 </div>
               </div>
@@ -108,39 +73,20 @@
 <div class="modal fade" id="addMaintenanceModal" tabindex="-1" aria-labelledby="addMaintenanceModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="addMaintenanceModalLabel"><i class="fas fa-wrench me-2"></i>Registrar Nueva Operación</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+      <div class="modal-header bg-dark text-white"><h5 class="modal-title" id="addMaintenanceModalLabel"><i class="fas fa-wrench me-2"></i>Registrar Nueva Operación</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
       <div class="modal-body">
         <form action="/maintenance/add/<%= truck._id %>" method="POST" enctype="multipart/form-data">
-          <div class="mb-3">
-            <label for="operationTypeSelect" class="form-label">Tipo de Operación</label>
-            <div class="input-group">
-              <select class="form-select" name="type" id="operationTypeSelect" required>
-                <option selected disabled value="">-- Seleccione una opción --</option>
-                <% operationTypes.forEach(function(opType) { %>
-                  <option value="<%= opType.name %>"><%= opType.name %></option>
-                <% }); %>
-              </select>
-              <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#addOperationTypeModal"><i class="fas fa-plus"></i></button>
-            </div>
-          </div>
+          <div class="mb-3"><label for="addOperationTypeSelect" class="form-label">Tipo de Operación</label><div class="input-group"><select class="form-select" name="type" id="addOperationTypeSelect" required><option selected disabled value="">-- Seleccione una opción --</option><% operationTypes.forEach(function(opType) { %><option value="<%= opType.name %>"><%= opType.name %></option><% }); %></select><button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#addOperationTypeModal"><i class="fas fa-plus"></i></button></div></div>
+          <div class="row"><div class="col-md-6 mb-3"><label for="addMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="addMileage" placeholder="Ej: 125000" required></div><div class="col-md-6 mb-3"><label for="addBrand" class="form-label">Marca del Repuesto (Opcional)</label><input type="text" class="form-control" name="brand" id="addBrand" placeholder="Ej: Casarella"></div></div>
           <div class="row">
-            <div class="col-md-6 mb-3"><label for="mileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="mileage" placeholder="Ej: 125000" required></div>
-            <div class="col-md-6 mb-3"><label for="brand" class="form-label">Marca del Repuesto (Opcional)</label><input type="text" class="form-control" name="brand" id="brand" placeholder="Ej: Casarella"></div>
+            <div class="col-md-6 mb-3"><label for="addDate" class="form-label">Fecha de la Operación</label><input type="date" class="form-control" name="date" id="addDate" required></div>
+            <div class="col-md-6 mb-3"><label for="addCost" class="form-label">Costo</label><div class="input-group"><input type="number" step="0.01" class="form-control" name="cost" id="addCost" placeholder="Ej: 800.00" required><select name="currency" class="form-select flex-grow-0" style="width: auto;"><option value="GTQ">GTQ</option><option value="USD">USD</option></select></div></div>
           </div>
-          <div class="row">
-            <div class="col-md-6 mb-3"><label for="date" class="form-label">Fecha de la Operación</label><input type="date" class="form-control" name="date" id="date" required></div>
-            <div class="col-md-6 mb-3"><label for="cost" class="form-label">Costo ($)</label><input type="number" step="0.01" class="form-control" name="cost" id="cost" placeholder="Ej: 150.50" required></div>
-          </div>
-          <div class="mb-3"><label for="details" class="form-label">Detalles y Notas (Taller, etc.)</label><textarea class="form-control" name="details" id="details" rows="2"></textarea></div>
-          <div class="mb-3"><label for="image" class="form-label">Comprobante (Factura/Recibo)</label><input class="form-control" type="file" name="image" id="image" accept="image/*" required></div>
-          <div class="mb-3"><label for="nextServiceDate" class="form-label">Fecha Próximo Servicio (Opcional)</label><input type="date" class="form-control" name="nextServiceDate" id="nextServiceDate"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-danger"><i class="fas fa-save me-2"></i>Guardar Registro</button>
-          </div>
+          <div class="mb-3"><label for="addDetails" class="form-label">Detalles y Notas</label><textarea class="form-control" name="details" id="addDetails" rows="2"></textarea></div>
+          <div class="mb-3"><label for="addImage" class="form-label">Comprobante</label><input class="form-control" type="file" name="image" id="addImage" accept="image/*" required></div>
+          <div class="mb-3"><label for="addNextServiceDate" class="form-label">Fecha Próximo Servicio (Opcional)</label><input type="date" class="form-control" name="nextServiceDate" id="addNextServiceDate"></div>
+          <div class="mb-3" id="addReminderContainer" style="display: none;"><label for="addReminderDays" class="form-label">Recordar con anticipación (días)</label><input type="number" class="form-control" name="reminderDays" id="addReminderDays" placeholder="Ej: 7"></div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-danger"><i class="fas fa-save me-2"></i>Guardar Registro</button></div>
         </form>
       </div>
     </div>
@@ -150,15 +96,26 @@
 <!-- ======================================================= -->
 <!-- ============= MODAL PARA AÑADIR TIPO DE OPERACIÓN ===== -->
 <!-- ======================================================= -->
-<div class="modal fade" id="addOperationTypeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addOperationTypeModalLabel" aria-hidden="true">
+<div class="modal fade" id="addOperationTypeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title" id="addOperationTypeModalLabel">Añadir Nuevo Tipo</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-header"><h5 class="modal-title">Añadir Nuevo Tipo</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
       <div class="modal-body">
-        <form id="newOperationTypeForm">
-          <div class="mb-3"><label for="newOperationTypeName" class="form-label">Nombre del Tipo</label><input type="text" class="form-control" id="newOperationTypeName" placeholder="Ej: Cambio de Correas" required><div id="opTypeError" class="form-text text-danger d-none"></div></div>
-          <div class="d-grid"><button type="submit" class="btn btn-danger">Guardar Tipo</button></div>
-        </form>
+        <form id="newOperationTypeForm"><div class="mb-3"><label for="newOperationTypeName" class="form-label">Nombre del Tipo</label><input type="text" class="form-control" id="newOperationTypeName" placeholder="Ej: Cambio de Correas" required><div id="opTypeError" class="form-text text-danger d-none"></div></div><div class="d-grid"><button type="submit" class="btn btn-danger">Guardar Tipo</button></div></form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- ============= MODAL PARA EDITAR CAMIÓN ================ -->
+<!-- ======================================================= -->
+<div class="modal fade" id="editTruckModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-truck me-2"></i>Editar Información del Camión</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body">
+        <form action="/trucks/update/<%= truck._id %>?_method=PUT" method="POST"><div class="mb-3"><label for="placa" class="form-label">Placa / Matrícula</label><input type="text" class="form-control" name="placa" value="<%= truck.placa %>" required></div><div class="mb-3"><label for="marca" class="form-label">Marca</label><input type="text" class="form-control" name="marca" value="<%= truck.marca %>" required></div><div class="mb-3"><label for="modelo" class="form-label">Modelo</label><input type="text" class="form-control" name="modelo" value="<%= truck.modelo %>" required></div><div class="mb-3"><label for="año" class="form-label">Año</label><input type="number" class="form-control" name="año" value="<%= truck.año %>" required></div><div class="mb-3"><label for="alias" class="form-label">Alias (Opcional)</label><input type="text" class="form-control" name="alias" value="<%= truck.alias || '' %>"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button></div></form>
       </div>
     </div>
   </div>
@@ -170,80 +127,12 @@
 <div class="modal fade" id="editMaintenanceModal" tabindex="-1" aria-labelledby="editMaintenanceModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="editMaintenanceModalLabel"><i class="fas fa-pencil-alt me-2"></i>Editar Registro de Operación</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+      <div class="modal-header bg-dark text-white"><h5 class="modal-title" id="editMaintenanceModalLabel"><i class="fas fa-pencil-alt me-2"></i>Editar Registro de Operación</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
       <div class="modal-body">
-        <!-- El 'action' se establece con JS. El método es POST. -->
-        <form id="editMaintenanceForm" method="POST" enctype="multipart/form-data">
-          <!-- NO HAY INPUT OCULTO AQUÍ -->
-          
-          <div class="mb-3">
-            <label for="editOperationTypeSelect" class="form-label">Tipo de Operación</label>
-            <select class="form-select" name="type" id="editOperationTypeSelect" required>
-              <% operationTypes.forEach(function(opType) { %>
-                <option value="<%= opType.name %>"><%= opType.name %></option>
-              <% }); %>
-            </select>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3"><label for="editMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="editMileage" required></div>
-            <div class="col-md-6 mb-3"><label for="editBrand" class="form-label">Marca del Repuesto (Opcional)</label><input type="text" class="form-control" name="brand" id="editBrand"></div>
-          </div>
-          <div class="row">
+        <form id="editMaintenanceForm" method="POST" enctype="multipart/form-data"><input type="hidden" name="_method" value="PUT"><div class="mb-3"><label for="editOperationTypeSelect" class="form-label">Tipo de Operación</label><select class="form-select" name="type" id="editOperationTypeSelect" required><% operationTypes.forEach(function(opType) { %><option value="<%= opType.name %>"><%= opType.name %></option><% }); %></select></div><div class="row"><div class="col-md-6 mb-3"><label for="editMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="editMileage" required></div><div class="col-md-6 mb-3"><label for="editBrand" class="form-label">Marca del Repuesto (Opcional)</label><input type="text" class="form-control" name="brand" id="editBrand"></div></div><div class="row">
             <div class="col-md-6 mb-3"><label for="editDate" class="form-label">Fecha de la Operación</label><input type="date" class="form-control" name="date" id="editDate" required></div>
-            <div class="col-md-6 mb-3"><label for="editCost" class="form-label">Costo ($)</label><input type="number" step="0.01" class="form-control" name="cost" id="editCost" required></div>
-          </div>
-          <div class="mb-3"><label for="editDetails" class="form-label">Detalles y Notas</label><textarea class="form-control" name="details" id="editDetails" rows="2"></textarea></div>
-          <div class="mb-3">
-            <label for="editImage" class="form-label">Nuevo Comprobante (Opcional)</label>
-            <input class="form-control" type="file" name="image" id="editImage" accept="image/*">
-            <div class="form-text">Sube un archivo solo si quieres reemplazar el existente.</div>
-          </div>
-          <div class="mb-3"><label for="editNextServiceDate" class="form-label">Fecha Próximo Servicio (Opcional)</label><input type="date" class="form-control" name="nextServiceDate" id="editNextServiceDate"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="editTruckModal" tabindex="-1" aria-labelledby="editTruckModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="editTruckModalLabel"><i class="fas fa-truck me-2"></i>Editar Información del Camión</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="/trucks/update/<%= truck._id %>?_method=PUT" method="POST">
-          <div class="mb-3">
-            <label for="placa" class="form-label">Placa / Matrícula</label>
-            <input type="text" class="form-control" name="placa" id="placa" value="<%= truck.placa %>" required>
-          </div>
-          <div class="mb-3">
-            <label for="marca" class="form-label">Marca</label>
-            <input type="text" class="form-control" name="marca" id="marca" value="<%= truck.marca %>" required>
-          </div>
-          <div class="mb-3">
-            <label for="modelo" class="form-label">Modelo</label>
-            <input type="text" class="form-control" name="modelo" id="modelo" value="<%= truck.modelo %>" required>
-          </div>
-          <div class="mb-3">
-            <label for="año" class="form-label">Año</label>
-            <input type="number" class="form-control" name="año" id="año" value="<%= truck.año %>" required>
-          </div>
-          <div class="mb-3">
-            <label for="alias" class="form-label">Alias (Opcional)</label>
-            <input type="text" class="form-control" name="alias" id="alias" value="<%= truck.alias || '' %>">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button>
-          </div>
+            <div class="col-md-6 mb-3"><label for="editCost" class="form-label">Costo</label><div class="input-group"><input type="number" step="0.01" class="form-control" name="cost" id="editCost" required><select name="currency" id="editCurrency" class="form-select flex-grow-0" style="width: auto;"><option value="GTQ">GTQ</option><option value="USD">USD</option></select></div></div>
+          </div><div class="mb-3"><label for="editDetails" class="form-label">Detalles y Notas</label><textarea class="form-control" name="details" id="editDetails" rows="2"></textarea></div><div class="mb-3"><label for="editImage" class="form-label">Nuevo Comprobante (Opcional)</label><input class="form-control" type="file" name="image" id="editImage" accept="image/*"><div class="form-text">Sube un archivo solo si quieres reemplazar el existente.</div></div><div class="mb-3"><label for="editNextServiceDate" class="form-label">Fecha Próximo Servicio (Opcional)</label><input type="date" class="form-control" name="nextServiceDate" id="editNextServiceDate"></div><div class="mb-3" id="editReminderContainer" style="display: none;"><label for="editReminderDays" class="form-label">Recordar con anticipación (días)</label><input type="number" class="form-control" name="reminderDays" id="editReminderDays"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button></div>
         </form>
       </div>
     </div>
@@ -255,31 +144,38 @@
 <!-- ======================================================= -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPO DE RECORDATORIO (MODAL DE AÑADIR) ---
+    const addNextServiceDateInput = document.getElementById('addNextServiceDate');
+    const addReminderContainer = document.getElementById('addReminderContainer');
+    addNextServiceDateInput.addEventListener('change', () => { addReminderContainer.style.display = addNextServiceDateInput.value ? 'block' : 'none'; });
+
+    // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPO DE RECORDATORIO (MODAL DE EDITAR) ---
+    const editNextServiceDateInput = document.getElementById('editNextServiceDate');
+    const editReminderContainer = document.getElementById('editReminderContainer');
+    editNextServiceDateInput.addEventListener('change', () => { editReminderContainer.style.display = editNextServiceDateInput.value ? 'block' : 'none'; });
+
     // --- SCRIPT PARA AÑADIR NUEVO TIPO DE OPERACIÓN ---
     const newOperationTypeForm = document.getElementById('newOperationTypeForm');
-    const newOperationTypeNameInput = document.getElementById('newOperationTypeName');
-    const operationTypeSelect = document.getElementById('operationTypeSelect');
-    const opTypeErrorDiv = document.getElementById('opTypeError');
-    const addOperationTypeModalInstance = new bootstrap.Modal(document.getElementById('addOperationTypeModal'));
     if (newOperationTypeForm) {
+      const newOperationTypeNameInput = document.getElementById('newOperationTypeName');
+      const addOperationTypeSelect = document.getElementById('addOperationTypeSelect');
+      const editOperationTypeSelect = document.getElementById('editOperationTypeSelect');
+      const opTypeErrorDiv = document.getElementById('opTypeError');
+      const addOperationTypeModalInstance = new bootstrap.Modal(document.getElementById('addOperationTypeModal'));
       newOperationTypeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const newName = newOperationTypeNameInput.value.trim();
         if (!newName) return;
         try {
-          const response = await fetch('/operation-types/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: newName })
-          });
+          const response = await fetch('/operation-types/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName }) });
           const data = await response.json();
           if (data.success) {
             const newOption = document.createElement('option');
             newOption.value = data.newType.name;
             newOption.textContent = data.newType.name;
-            operationTypeSelect.appendChild(newOption);
+            addOperationTypeSelect.appendChild(newOption);
             const newOptionForEdit = newOption.cloneNode(true);
-            document.getElementById('editOperationTypeSelect').appendChild(newOptionForEdit);
+            editOperationTypeSelect.appendChild(newOptionForEdit);
             newOption.selected = true;
             newOperationTypeNameInput.value = '';
             opTypeErrorDiv.classList.add('d-none');
@@ -307,8 +203,10 @@
         const mileage = button.getAttribute('data-mileage');
         const date = button.getAttribute('data-date');
         const cost = button.getAttribute('data-cost');
+        const currency = button.getAttribute('data-currency'); // <-- NUEVO
         const details = button.getAttribute('data-details');
         const nextServiceDate = button.getAttribute('data-nextservicedate');
+        const reminderDays = button.getAttribute('data-reminderdays');
 
         const form = editMaintenanceModal.querySelector('#editMaintenanceForm');
         const typeSelect = editMaintenanceModal.querySelector('#editOperationTypeSelect');
@@ -316,11 +214,11 @@
         const mileageInput = editMaintenanceModal.querySelector('#editMileage');
         const dateInput = editMaintenanceModal.querySelector('#editDate');
         const costInput = editMaintenanceModal.querySelector('#editCost');
+        const currencySelect = editMaintenanceModal.querySelector('#editCurrency'); // <-- NUEVO
         const detailsInput = editMaintenanceModal.querySelector('#editDetails');
         const nextServiceDateInput = editMaintenanceModal.querySelector('#editNextServiceDate');
+        const reminderDaysInput = editMaintenanceModal.querySelector('#editReminderDays');
 
-        // ¡LA CLAVE! Se actualiza el 'action' del formulario para que apunte a la URL
-        // correcta, incluyendo el método PUT como un parámetro de la query string.
         form.action = `/maintenance/update/${id}?_method=PUT`;
         
         typeSelect.value = type;
@@ -328,8 +226,12 @@
         mileageInput.value = mileage;
         dateInput.value = date;
         costInput.value = cost;
+        currencySelect.value = currency; // <-- NUEVO
         detailsInput.value = details;
         nextServiceDateInput.value = nextServiceDate;
+        reminderDaysInput.value = reminderDays;
+        
+        editReminderContainer.style.display = nextServiceDate ? 'block' : 'none';
       });
     }
   });

@@ -12,14 +12,19 @@ const MethodOverride = require('method-override');
 const path = require('path');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
+const notificationsMiddleware = require('./middlewares/notifications');
+const apiRoutes = require('./routes/api.routes.js'); 
 
 require('dotenv').config(); 
+
 
 // Importo rutas aqui
 const indexRoutes = require('./routes/index.routes');
 const truckRoutes = require('./routes/trucks.routes');
 const maintenanceRoutes = require('./routes/maintenance.routes.js');
 const opTypeRoutes = require('./routes/operationType.routes.js');
+const reportRoutes = require('./routes/reports.routes.js'); 
+const fuelRoutes = require('./routes/fuel.routes.js');
 
 // 2. INICIALIZACIONES
 const app = express();
@@ -64,11 +69,19 @@ app.use(session({
 // Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// middleware
+app.use(notificationsMiddleware);
+
 // 5. RUTAS
 app.use('/', indexRoutes);
 app.use('/trucks', truckRoutes);
 app.use('/maintenance', maintenanceRoutes);
 app.use('/operation-types', opTypeRoutes);
+app.use('/reports', reportRoutes); 
+app.use('/', indexRoutes);
+app.use('/api', apiRoutes); 
+app.use('/fuel', fuelRoutes);
 
 // 6. INICIALIZACIÓN DEL SERVIDOR
 server.listen(app.get('port'), () => {

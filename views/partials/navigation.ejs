@@ -1,24 +1,45 @@
-<!-- views/partials/navigation.ejs -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<!-- views/partials/navigation.ejs (COMPLETO Y ACTUALIZADO CON NOTIFICACIONES) -->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
   <div class="container">
-    <a class="navbar-brand" href="/">
-      <!-- Podríamos poner un logo aquí en el futuro -->
+    <!-- Enlace principal con el logo y nombre de la aplicación -->
+    <a class="navbar-brand d-flex align-items-center" href="/trucks">
+      <img src="/img/logo-light.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2">
       <strong>Gestor de Flota</strong>
     </a>
+    
+    <!-- Botón 'hamburguesa' para vistas móviles -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+    
+    <!-- Contenedor de los enlaces de navegación -->
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+      <!-- 'ms-auto' empuja los enlaces a la derecha -->
+      <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item">
-          <a class="nav-link active" href="/trucks">Camiones</a>
+          <a class="nav-link" href="/trucks">Camiones</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Mantenimientos</a>
+          <a class="nav-link" href="/reports/maintenance">Mantenimientos</a>
+        </li>
+                <li class="nav-item">
+          <!-- ¡CAMBIO AQUÍ! -->
+          <a class="nav-link" href="/fuel">Combustible</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Reportes</a>
+          <a class="nav-link disabled" href="#">Reportes</a> <!-- Enlace deshabilitado temporalmente -->
         </li>
+        
+        <!-- ======================================================= -->
+        <!-- ============ ICONO DE NOTIFICACIONES NUEVO ============ -->
+        <!-- ======================================================= -->
+        <li class="nav-item">
+          <!-- Ahora es un botón. 'data-bs-toggle' y 'data-bs-target' abren el modal -->
+          <button type="button" id="notificationsBellBtn" class="btn btn-dark position-relative fs-5" data-bs-toggle="modal" data-bs-target="#notificationsModal" title="Notificaciones">
+            <i class="fas fa-bell"></i>
+            <span id="notification-badge-container"></span>
+          </button>
       </ul>
     </div>
   </div>

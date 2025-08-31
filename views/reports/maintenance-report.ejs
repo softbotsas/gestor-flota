@@ -1,0 +1,124 @@
+<!-- views/reports/maintenance-report.ejs -->
+<% layout('layouts/main') %>
+
+<h1 class="h3 mb-4 text-gray-800"><i class="fas fa-chart-line me-2"></i>Reporte de Mantenimientos</h1>
+
+<!-- Formulario de Filtros -->
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-danger">Filtros de Búsqueda</h6>
+  </div>
+  <div class="card-body">
+    <form action="/reports/maintenance" method="GET" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label for="truck" class="form-label">Filtrar por Camión</label>
+        <select name="truck" id="truck" class="form-select">
+          <option value="">Todos los Camiones</option>
+          <% trucks.forEach(function(t) { %>
+            <option value="<%= t._id %>" <%= filters.truck == t._id ? 'selected' : '' %>><%= t.alias || t.placa %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="type" class="form-label">Filtrar por Tipo</label>
+        <select name="type" id="type" class="form-select">
+          <option value="">Todos los Tipos</option>
+          <% operationTypes.forEach(function(ot) { %>
+            <option value="<%= ot.name %>" <%= filters.type == ot.name ? 'selected' : '' %>><%= ot.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="startDate" class="form-label">Desde</label>
+        <input type="date" name="startDate" id="startDate" class="form-control" value="<%= filters.startDate || '' %>">
+      </div>
+      <div class="col-md-2">
+        <label for="endDate" class="form-label">Hasta</label>
+        <input type="date" name="endDate" id="endDate" class="form-control" value="<%= filters.endDate || '' %>">
+      </div>
+      <div class="col-md-2 d-flex">
+        <button type="submit" class="btn btn-danger w-100 me-2">Filtrar</button>
+        <a href="/reports/maintenance" class="btn btn-secondary w-100">Limpiar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Pestañas para Historial y Próximos Servicios -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="true">
+      Historial de Mantenimientos (<%= maintenances.length %>)
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link position-relative" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="false">
+      Próximos Servicios
+      <% if (upcomingServices.length > 0) { %>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"><%= upcomingServices.length %></span>
+      <% } %>
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+  <!-- Contenido de la pestaña Historial -->
+  <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
+    <div class="card shadow mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-end align-items-center mb-3">
+          <h5 class="text-danger">Costo Total (Filtrado): <span class="fw-bold">$<%= totalCost.toFixed(2) %></span></h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered" width="100%" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Camión</th>
+                <th>Tipo</th>
+                <th>Marca</th>
+                <th>Fecha</th>
+                <th>Kilometraje</th>
+                <th>Costo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% maintenances.forEach(function(m) { %>
+                <tr>
+                  <td><a href="/trucks/<%= m.truck._id %>"><%= m.truck.alias || m.truck.placa %></a></td>
+                  <td><%= m.type %></td>
+                  <td><%= m.brand || 'N/A' %></td>
+                  <td><%= new Date(m.date).toLocaleDateString('es-ES') %></td>
+                  <td><%= m.mileage.toLocaleString('es-ES') %> km</td>
+                  <td>$<%= m.cost.toFixed(2) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido de la pestaña Próximos Servicios -->
+  <div class="tab-pane fade" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+    <div class="card shadow mb-4">
+      <div class="card-body">
+        <% if (upcomingServices.length > 0) { %>
+          <div class="list-group">
+            <% upcomingServices.forEach(function(s) { %>
+              <a href="/trucks/<%= s.truck._id %>" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1"><%= s.truck.alias || s.truck.placa %></h5>
+                  <small class="text-danger fw-bold"><%= new Date(s.nextServiceDate).toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}) %></small>
+                </div>
+                <p class="mb-1">Próximo servicio de: <strong><%= s.type %></strong></p>
+              </a>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <p class="text-center text-muted mt-4">No hay servicios programados próximamente.</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

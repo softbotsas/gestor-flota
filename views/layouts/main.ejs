@@ -24,8 +24,92 @@
   <main class="container p-4">
     <%- body %>
   </main>
-  
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="notificationsModalLabel"><i class="fas fa-bell text-danger me-2"></i>Notificaciones de Próximos Servicios</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Aquí cargaremos dinámicamente las notificaciones -->
+          <div id="notificationsList">
+            <!-- El contenido se generará con JavaScript -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="/reports/maintenance#upcoming" class="btn btn-danger">Ver todos en Mantenimientos</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Bootstrap 5 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <!-- ¡NUEVO! Script para manejar las notificaciones -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Necesitamos una manera de obtener los datos de las notificaciones
+      // Lo haremos a través de un endpoint en el backend.
+      const notificationsBtn = document.getElementById('notificationsBellBtn');
+      const notificationsListDiv = document.getElementById('notificationsList');
+
+      if (notificationsBtn) {
+        notificationsBtn.addEventListener('click', async () => {
+          notificationsListDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-danger" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+          
+          try {
+            const response = await fetch('/api/notifications');
+            const data = await response.json();
+
+            if (data.success && data.notifications.length > 0) {
+              notificationsListDiv.innerHTML = ''; // Limpiamos el spinner
+              data.notifications.forEach(notif => {
+                const notificationHTML = `
+                  <a href="/trucks/${notif.truck._id}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                      <h6 class="mb-1 fw-bold">${notif.truck.alias || notif.truck.placa}</h6>
+                      <small class="text-danger">${new Date(notif.nextServiceDate).toLocaleDateString('es-ES')}</small>
+                    </div>
+                    <p class="mb-1">Servicio de <strong>${notif.type}</strong> programado.</p>
+                  </a>`;
+                notificationsListDiv.insertAdjacentHTML('beforeend', notificationHTML);
+              });
+            } else {
+              notificationsListDiv.innerHTML = '<p class="text-center text-muted">No hay notificaciones activas en este momento.</p>';
+            }
+          } catch (error) {
+            console.error('Error al cargar notificaciones:', error);
+            notificationsListDiv.innerHTML = '<p class="text-center text-danger">No se pudieron cargar las notificaciones.</p>';
+          }
+        });
+      }
+    });
+  </script>
+
+    <script>
+    // Esta función se ejecuta tan pronto como la página carga.
+    (async function fetchNotificationCount() {
+      try {
+        const response = await fetch('/api/notifications/count');
+        const data = await response.json();
+
+        if (data.success && data.count > 0) {
+          const badgeContainer = document.getElementById('notification-badge-container');
+          
+          // Creamos dinámicamente el HTML de la insignia y lo insertamos
+          const badgeHTML = `
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6em;">
+              ${data.count}
+              <span class="visually-hidden">notificaciones</span>
+            </span>`;
+          
+          badgeContainer.innerHTML = badgeHTML;
+        }
+      } catch (error) {
+        console.error('Error al obtener el conteo de notificaciones:', error);
+      }
+    })(); // Los paréntesis al final hacen que la función se ejecute inmediatamente
+  </script>
 </body>
 </html>

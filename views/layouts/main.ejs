@@ -22,8 +22,10 @@
   </main>
   
   <!-- ======================================================= -->
-  <!-- ============== MODAL GLOBAL DE NOTIFICACIONES ========= -->
+  <!-- ======================= MODALES GLOBALES ======================= -->
   <!-- ======================================================= -->
+
+  <!-- Modal Global de Notificaciones -->
   <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
@@ -42,6 +44,24 @@
     </div>
   </div>
 
+  <!-- Modal Global para Visualizar Imágenes -->
+  <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-labelledby="imageViewerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imageViewerModalLabel">Comprobante</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="receiptImageTag" src="" alt="Comprobante" class="img-fluid rounded">
+        </div>
+        <div class="modal-footer">
+          <a id="downloadReceiptBtn" href="#" download class="btn btn-success"><i class="fas fa-download me-2"></i>Descargar</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ======================================================= -->
   <!-- ======================== SCRIPTS ====================== -->
   <!-- ======================================================= -->
@@ -51,10 +71,10 @@
   <script src="/js/viewer.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Script Global de la Aplicación (SOLO NOTIFICACIONES) -->
+  <!-- Script Global de la Aplicación -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // --- MÓDULO DE NOTIFICACIONES (CORREGIDO) ---
+      // --- MÓDULO DE NOTIFICACIONES ---
       const notificationsBtn = document.getElementById('notificationsBellBtn');
       const notificationsListDiv = document.getElementById('notificationsList');
       
@@ -71,8 +91,6 @@
               
               data.notifications.forEach(notif => {
                 const title = notif.eventName || notif.type || `Servicio programado`;
-                
-                // ¡ENLACE CORREGIDO! Apunta a la página de detalles y pasa el parámetro 'highlight'
                 const linkHref = `/trucks/${notif.truck._id}?highlight=${notif._id}`;
 
                 const notificationHTML = `
@@ -112,6 +130,33 @@
           console.error('Error al obtener el conteo de notificaciones:', error);
         }
       })();
+
+      // --- MÓDULO GLOBAL PARA VISOR DE IMÁGENES ---
+      const imageModalEl = document.getElementById('imageViewerModal');
+      if (imageModalEl) {
+          const imageTag = document.getElementById('receiptImageTag');
+          const downloadBtn = document.getElementById('downloadReceiptBtn');
+          const modalTitle = document.getElementById('imageViewerModalLabel');
+
+          imageModalEl.addEventListener('show.bs.modal', (event) => {
+              const button = event.relatedTarget;
+              if (button) {
+                  const imageUrl = button.getAttribute('data-image-url');
+                  const title = button.getAttribute('data-modal-title') || 'Comprobante';
+                  
+                  if(modalTitle) modalTitle.textContent = title;
+                  if(imageTag) imageTag.src = imageUrl;
+                  if(downloadBtn) {
+                    downloadBtn.href = imageUrl;
+                    downloadBtn.download = `recibo_${imageUrl.split('/').pop()}`;
+                  }
+              }
+          });
+
+          imageModalEl.addEventListener('hidden.bs.modal', () => {
+              if(imageTag) imageTag.src = '';
+          });
+      }
     });
   </script>
 </body>

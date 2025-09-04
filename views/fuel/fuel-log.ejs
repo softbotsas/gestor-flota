@@ -60,10 +60,19 @@
                 <p class="mb-1"><span class="fw-bold text-danger"><%= r.quantity.toFixed(2) %> <%= r.unit %></span> por <span class="fw-bold"><%= r.currency === 'GTQ' ? 'Q' : '$' %><%= r.cost.toFixed(2) %></span></p>
                 <small class="text-muted"><%= r.mileage.toLocaleString('es-ES') %> km &bull; <%= r.currency === 'GTQ' ? 'Q' : '$' %><%= r.pricePerUnit.toFixed(2) %> por <%= r.unit.slice(0, -2) %></small>
               </div>
+<!-- =================== REEMPLAZO (BOTONES EN fuel-log.ejs) =================== -->
               <div class="d-flex gap-1">
-                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#imageViewerModal" data-image-url="<%= r.receiptImage %>" data-modal-title="Recibo de Combustible"><i class="fas fa-receipt"></i></button>
+                <!-- BOTÓN CORREGIDO Y ESTANDARIZADO CON LA CLASE 'view-receipt-btn' -->
+                <button class="btn btn-outline-secondary btn-sm view-receipt-btn" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#imageViewerModal" 
+                        data-image-url="<%= r.receiptImage %>" 
+                        data-modal-title="Recibo de Combustible - <%= r.truck.alias || r.truck.placa %>">
+                    <i class="fas fa-receipt"></i>
+                </button>
+                
                 <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editFuelModal" data-record='<%- JSON.stringify(r) %>'><i class="fas fa-pencil-alt"></i></button>
-                <form action="/fuel/delete/<%= r._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar este registro?');"><button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button></form>
+                <form action="/fuel/delete/<%= r._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar este registro?');"><button type-="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button></form>
               </div>
             </div>
           </div>
@@ -102,7 +111,6 @@
 
 <!-- Scripts específicos para esta página -->
 <%
-  // Construimos el HTML de las opciones de camiones en el servidor para usarlo en el script.
   let truckOptionsHTML = '';
   trucks.forEach(function(t) {
     truckOptionsHTML += `<option value="${t._id}">${t.alias || t.placa}</option>`;
@@ -110,7 +118,6 @@
 %>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Inyectamos las opciones de los camiones en una variable de JS.
     const truckOptionsHTML = `<%- truckOptionsHTML %>`;
 
     // --- LÓGICA DE CÁLCULO AUTOMÁTICO PARA EL FORMULARIO DE AÑADIR ---
@@ -167,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             form.action = `/fuel/update/${record._id}?_method=PUT`;
             
-            // ¡SOLUCIÓN! Llenamos el select con las opciones y luego seleccionamos la correcta.
+            // Llenar y seleccionar el camión
             editTruckSelect.innerHTML = truckOptionsHTML;
             form.querySelector('#editTruckSelect').value = record.truck._id;
             
@@ -179,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
             form.querySelector('#editCost').value = record.cost;
             form.querySelector('#editCurrency').value = record.currency;
             
-            updateEditSymbol(); // Actualiza el símbolo al abrir
+            updateEditSymbol();
         });
     }
 });

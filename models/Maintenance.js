@@ -1,78 +1,49 @@
-// models/Maintenance.js
-// VERSIÓN FINAL Y COMPLETA CON "SOFT DELETE" Y RECORDATORIOS
-
+// models/Maintenance.js (CON NOMBRE DE MECÁNICO SIMPLIFICADO)
 const { Schema, model } = require('mongoose');
 
+// Definimos primero el esquema para los ítems de servicio individuales
+const ServiceItemSchema = new Schema({
+  type: { type: String, required: true },
+  brand: { type: String },
+  cost: { type: Number, required: true },
+  details: { type: String }
+}, { _id: false });
+
 const MaintenanceSchema = new Schema({
-  // Referencia al camión al que pertenece este mantenimiento.
   truck: {
     type: Schema.Types.ObjectId,
     ref: 'Truck',
     required: true
   },
-  // El tipo de operación (ej: "Cambio de Aceite").
-  type: {
+  eventName: {
     type: String,
     required: true,
+    trim: true,
+    default: 'Mantenimiento General'
   },
-  // La marca del repuesto utilizado.
-  brand: {
+  
+  // ¡NUEVO Y SIMPLIFICADO! Un simple campo de texto para el nombre del mecánico.
+  mechanicName: {
     type: String,
-    required: false,
-    trim: true
+    trim: true,
+    required: false // Opcional
   },
-  // El kilometraje del vehículo en el momento del servicio.
-  mileage: {
-    type: Number,
-    required: true
-  },
-  // La fecha en que se realizó la operación.
-  date: {
-    type: Date,
-    required: true
-  },
-  // El costo de la operación.
-  cost: {
-    type: Number,
-    required: true
-  },
-    // ¡NUEVO CAMPO! Para la moneda
+
+  date: { type: Date, required: true },
+  mileage: { type: Number, required: true },
+  totalCost: { type: Number, required: true },
   currency: {
     type: String,
     required: true,
-    enum: ['USD', 'GTQ'], // Dólares Americanos, Quetzales de Guatemala
+    enum: ['USD', 'GTQ'],
     default: 'GTQ'
   },
-  // Notas o detalles adicionales.
-  details: {
-    type: String,
-    trim: true
-  },
-  // La ruta a la imagen del comprobante/factura.
-  receiptImage: {
-    type: String,
-    required: true
-  },
-  // Fecha para el próximo servicio (opcional).
-  nextServiceDate: {
-    type: Date,
-    required: false
-  },
-  
-  // ¡NUEVO! Días de anticipación para el recordatorio.
-  reminderDays: {
-    type: Number,
-    required: false
-  },
-  
-  // Campo para el borrado suave (soft delete).
-  isActive: {
-    type: Boolean,
-    default: true // Por defecto, todos los nuevos registros estarán activos.
-  }
-}, {
-  // Añade automáticamente los campos createdAt y updatedAt.
-  timestamps: true
-});
+  serviceItems: [ServiceItemSchema],
+  receiptImage: { type: String, required: false },
+  nextServiceDate: { type: Date, required: false },
+  reminderDays: { type: Number, required: false },
+  isCompleted: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
 
 module.exports = model('Maintenance', MaintenanceSchema);

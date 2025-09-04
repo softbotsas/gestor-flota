@@ -27,6 +27,12 @@ const TruckSchema = new Schema({
     type: String,
     required: false, // Este campo es opcional
     trim: true
+  },
+    // ¡NUEVO CAMPO!
+  status: {
+    type: String,
+    enum: ['Activo', 'Inactivo'],
+    default: 'Activo'
   }
 }, {
   timestamps: true // Esto añade automáticamente los campos createdAt y updatedAt

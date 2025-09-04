@@ -1,0 +1,144 @@
+<% layout('layouts/main') %>
+
+<!-- Encabezado de la página -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-file-invoice-dollar me-2"></i>Generador de Reportes</h1>
+    <div class="btn-group">
+      <a href="#" id="exportExcelBtn" class="btn btn-sm btn-success shadow-sm">
+        <i class="fas fa-file-excel fa-sm text-white-50"></i> Exportar a Excel
+      </a>
+      <a href="#" id="exportPdfBtn" class="btn btn-sm btn-warning shadow-sm">
+        <i class="fas fa-file-pdf fa-sm text-white-50"></i> Exportar a PDF
+      </a>
+    </div>
+</div>
+
+<!-- Panel de Filtros Global -->
+<div class="card shadow mb-4">
+  <div class="card-body">
+    <form action="/reports" method="GET" id="reportsForm">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Tipo de Gasto</label>
+            <select name="expenseType" id="expenseType" class="form-select">
+                <option value="all" <%= (!filters.expenseType || filters.expenseType === 'all') ? 'selected' : '' %>>Todos</option>
+                <option value="maintenance" <%= filters.expenseType === 'maintenance' ? 'selected' : '' %>>Mantenimiento</option>
+                <option value="fuel" <%= filters.expenseType === 'fuel' ? 'selected' : '' %>>Combustible</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Camión</label>
+            <select name="truck" class="form-select">
+                <option value="">Todos</option>
+                <% allTrucks.forEach(function(t) { %>
+                    <option value="<%= t._id %>" <%= filters.truck == t._id ? 'selected' : '' %>><%= t.alias || t.placa %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="col-md-2" id="opTypeFilterContainer" style="<% if (filters.expenseType !== 'maintenance') { %>display: none;<% } %>">
+            <label class="form-label">Tipo de Ítem</label>
+            <select name="opType" class="form-select">
+                <option value="">Todos</option>
+                <% allOpTypes.forEach(function(ot) { %>
+                    <option value="<%= ot.name %>" <%= filters.opType == ot.name ? 'selected' : '' %>><%= ot.name %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="col-md-2"><label class="form-label">Desde</label><input type="date" name="startDate" class="form-control" value="<%= filters.startDate || '' %>"></div>
+        <div class="col-md-2"><label class="form-label">Hasta</label><input type="date" name="endDate" class="form-control" value="<%= filters.endDate || '' %>"></div>
+        <div class="col-md-1 d-grid"><button type="submit" class="btn btn-danger">Buscar</button></div>
+        <div class="col-md-12 text-end mt-2"><a href="/reports" class="btn btn-sm btn-link">Limpiar filtros</a></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Widgets de KPIs Dinámicos -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2"><div class="card-body"><div class="row no-gutters align-items-center"><div class="col mr-2"><div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Gasto en Mantenimiento</div><div class="h5 mb-0 font-weight-bold text-gray-800"><% if (KPIs.maintenanceCost.GTQ) { %><span>Q<%= KPIs.maintenanceCost.GTQ.toFixed(2) %></span><% } %><% if (KPIs.maintenanceCost.USD) { %><span class="ms-3">$<%= KPIs.maintenanceCost.USD.toFixed(2) %></span><% } %><% if (!KPIs.maintenanceCost.GTQ && !KPIs.maintenanceCost.USD) { %><span>Q0.00</span><% } %></div></div><div class="col-auto"><i class="fas fa-wrench fa-2x text-gray-300"></i></div></div></div></div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2"><div class="card-body"><div class="row no-gutters align-items-center"><div class="col mr-2"><div class="text-xs font-weight-bold text-success text-uppercase mb-1">Gasto en Combustible</div><div class="h5 mb-0 font-weight-bold text-gray-800"><% if (KPIs.fuelCost.GTQ) { %><span>Q<%= KPIs.fuelCost.GTQ.toFixed(2) %></span><% } %><% if (KPIs.fuelCost.USD) { %><span class="ms-3">$<%= KPIs.fuelCost.USD.toFixed(2) %></span><% } %><% if (!KPIs.fuelCost.GTQ && !KPIs.fuelCost.USD) { %><span>Q0.00</span><% } %></div></div><div class="col-auto"><i class="fas fa-gas-pump fa-2x text-gray-300"></i></div></div></div></div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2"><div class="card-body"><div class="row no-gutters align-items-center"><div class="col mr-2"><div class="text-xs font-weight-bold text-info text-uppercase mb-1"># Servicios Mant.</div><div class="h5 mb-0 font-weight-bold text-gray-800"><%= KPIs.maintenanceCount %></div></div><div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div></div></div></div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2"><div class="card-body"><div class="row no-gutters align-items-center"><div class="col mr-2"><div class="text-xs font-weight-bold text-info text-uppercase mb-1"># Recargas Comb.</div><div class="h5 mb-0 font-weight-bold text-gray-800"><%= KPIs.fuelCount %></div></div><div class="col-auto"><i class="fas fa-receipt fa-2x text-gray-300"></i></div></div></div></div>
+    </div>
+</div>
+
+<!-- Línea de Tiempo de Gastos -->
+<div class="card shadow">
+  <div class="card-body">
+    <h5 class="mb-3">Resultados de Búsqueda (<%= records.length %>)</h5>
+    <div class="list-group">
+        <% if (records.length > 0) { %>
+            <% records.forEach(function(rec) { %>
+                <% if (rec.eventName) { %> <!-- Es un registro de MANTENIMIENTO -->
+                    <a href="/trucks/<%= rec.truck._id %>?highlight=<%= rec._id %>" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="fas fa-wrench text-danger me-2"></i> <strong><%= rec.truck.alias || rec.truck.placa %></strong> - <%= rec.eventName %></h6>
+                            <small><%= new Date(rec.date).toLocaleDateString('es-ES') %></small>
+                        </div>
+                        <p class="mb-1 small">Total: <span class="fw-bold"><%= rec.currency === 'GTQ' ? 'Q' : '$' %><%= rec.totalCost.toFixed(2) %></span> | <%= rec.serviceItems.length %> ítems</p>
+                    </a>
+                <% } else { %> <!-- Es un registro de COMBUSTIBLE -->
+                     <a href="/fuel" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                             <h6 class="mb-1"><i class="fas fa-gas-pump text-success me-2"></i> <strong><%= rec.truck.alias || rec.truck.placa %></strong> - Recarga de Combustible</h6>
+                             <small><%= new Date(rec.date).toLocaleDateString('es-ES') %></small>
+                        </div>
+                        <p class="mb-1 small">Total: <span class="fw-bold"><%= rec.currency === 'GTQ' ? 'Q' : '$' %><%= rec.cost.toFixed(2) %></span> | <%= rec.quantity.toFixed(2) %> <%= rec.unit %></p>
+                    </a>
+                <% } %>
+            <% }); %>
+        <% } else { %>
+            <div class="text-center p-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><h5 class="text-muted">No se encontraron registros para los filtros seleccionados.</h5></div>
+        <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts para esta página -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SCRIPT PARA FILTRO CONDICIONAL ---
+        const expenseTypeSelect = document.getElementById('expenseType');
+        const opTypeContainer = document.getElementById('opTypeFilterContainer');
+        if(expenseTypeSelect && opTypeContainer) {
+            expenseTypeSelect.addEventListener('change', function() {
+                if (this.value === 'maintenance') {
+                    opTypeContainer.style.display = 'block';
+                } else {
+                    opTypeContainer.style.display = 'none';
+                }
+            });
+        }
+        
+        // --- SCRIPT PARA LOS BOTONES DE EXPORTACIÓN ---
+        const reportsForm = document.getElementById('reportsForm');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        
+        if (reportsForm) {
+            if (exportExcelBtn) {
+                exportExcelBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(reportsForm);
+                    const params = new URLSearchParams(formData);
+                    window.location.href = `/reports/export/excel?${params.toString()}`;
+                });
+            }
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(reportsForm);
+                    const params = new URLSearchParams(formData);
+                    window.location.href = `/reports/export/pdf?${params.toString()}`;
+                });
+            }
+        }
+    });
+</script>

@@ -1,10 +1,11 @@
-// routes/index.routes.js (ACTUALIZADO)
+// routes/index.routes.js (VERSIÓN FINAL Y SIMPLIFICADA)
 const { Router } = require('express');
 const router = Router();
 
-// La ruta raíz ('/') ahora renderiza nuestra nueva pantalla de carga.
+// La única responsabilidad de este archivo es mostrar el splash screen inicial.
+// No necesita estar protegido, es público.
 router.get('/', (req, res) => {
-  res.render('splash');
+  res.render('splash'); 
 });
 
 module.exports = router;

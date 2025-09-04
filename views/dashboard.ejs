@@ -1,0 +1,193 @@
+<% layout('layouts/main') %>
+
+<!-- Encabezado del Dashboard -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Panel de Control</h1>
+    <a href="/reports" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
+      <i class="fas fa-file-alt fa-sm text-white-50"></i> Centro de Reportes
+    </a>
+</div>
+
+<!-- Fila de Widgets de Resumen (KPIs) -->
+<div class="row">
+    <!-- Camiones Activos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Flota Operativa</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= activeTrucksCount %> Camiones Activos</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-truck fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gasto en Mantenimiento (Mes Actual) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Mantenimiento (Este Mes)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                          <% if (maintenanceCosts.GTQ) { %> <span>Q<%= maintenanceCosts.GTQ.toFixed(2) %></span> <% } %>
+                          <% if (maintenanceCosts.USD) { %> <span class="ms-2">$<%= maintenanceCosts.USD.toFixed(2) %></span> <% } %>
+                          <% if (!maintenanceCosts.GTQ && !maintenanceCosts.USD) { %> <span>Q0.00</span> <% } %>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-wrench fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gasto en Combustible (Mes Actual) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Combustible (Este Mes)</div>
+                         <div class="h5 mb-0 font-weight-bold text-gray-800">
+                          <% if (fuelCosts.GTQ) { %> <span>Q<%= fuelCosts.GTQ.toFixed(2) %></span> <% } %>
+                          <% if (fuelCosts.USD) { %> <span class="ms-2">$<%= fuelCosts.USD.toFixed(2) %></span> <% } %>
+                          <% if (!fuelCosts.GTQ && !fuelCosts.USD) { %> <span>Q0.00</span> <% } %>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-gas-pump fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recargas de Combustible (Mes Actual) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                 <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Recargas (Este Mes)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= fuelRecordsCount %> Registros</div>
+                    </div>
+                     <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila de Contenido Principal -->
+<div class="row">
+    <!-- Columna de Agenda de Servicios -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-danger"><i class="fas fa-calendar-alt me-2"></i>Agenda: Próximos 5 Servicios</h6>
+            </div>
+            <div class="card-body">
+              <% if (upcomingServices.length > 0) { %>
+                <div class="list-group list-group-flush">
+                  <% upcomingServices.forEach(function(s) { %>
+                    <a href="/trucks/<%= s.truck._id %>?action=complete&serviceId=<%= s._id %>" class="list-group-item list-group-item-action">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1 fw-bold"><%= s.truck.alias || s.truck.placa %></h6>
+                        <small class="text-danger"><%= new Date(s.nextServiceDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) %></small>
+                      </div>
+                      <p class="mb-1 small">Servicio programado: <%= s.eventName || s.type %></p>
+                    </a>
+                  <% }); %>
+                </div>
+              <% } else { %>
+                <div class="text-center p-4">
+                  <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                  <h5 class="text-muted">¡Todo al día!</h5>
+                  <p class="text-muted">No hay servicios programados próximamente.</p>
+                </div>
+              <% } %>
+            </div>
+             <div class="card-footer text-center">
+                <a href="/reports/maintenance#upcoming">Ver agenda completa &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna del Gráfico de Gastos Mensuales -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-danger"><i class="fas fa-chart-bar me-2"></i>Gastos Mensuales (Últimos 6 Meses)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyExpensesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script específico para el gráfico de esta página -->
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const chartCanvas = document.getElementById('monthlyExpensesChart');
+  if (!chartCanvas) return; // Si no estamos en el dashboard, no hacer nada.
+
+  try {
+    // 1. Llamamos a nuestra nueva API para obtener los datos del gráfico
+    const response = await fetch('/api/charts/monthly-expenses');
+    const result = await response.json();
+    
+    if (result.success) {
+      // 2. Usamos Chart.js para dibujar el gráfico con los datos recibidos
+      new Chart(chartCanvas, {
+        type: 'bar',
+        data: result.chartData, // Los datos vienen perfectamente formateados desde el backend
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: true, // Apila las barras del mismo mes
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              // Formateamos las etiquetas del eje Y para que muestren "Q" o "$"
+              ticks: {
+                  callback: function(value) {
+                      // Este callback se puede mejorar si necesitas un formato más específico
+                      // por ahora, simplemente añadimos 'Q' como prefijo principal.
+                      return 'Q' + new Intl.NumberFormat('es-GT').format(value);
+                  }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) { label += ': '; }
+                  if (context.parsed.y !== null) {
+                    // Detecta la moneda desde la etiqueta del dataset
+                    const currency = label.includes('USD') ? 'USD' : 'GTQ';
+                    label += new Intl.NumberFormat('es-GT', { style: 'currency', currency: currency }).format(context.parsed.y);
+                  }
+                  return label;
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      console.error("No se pudieron cargar los datos del gráfico desde la API.");
+      chartCanvas.getContext('2d').fillText("No se pudieron cargar los datos del gráfico.", 10, 50);
+    }
+  } catch (error) {
+    console.error("Error al obtener o dibujar el gráfico:", error);
+    chartCanvas.getContext('2d').fillText("Ocurrió un error al cargar el gráfico.", 10, 50);
+  }
+});
+</script>

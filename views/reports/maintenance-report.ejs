@@ -1,124 +1,81 @@
-<!-- views/reports/maintenance-report.ejs -->
 <% layout('layouts/main') %>
 
-<h1 class="h3 mb-4 text-gray-800"><i class="fas fa-chart-line me-2"></i>Reporte de Mantenimientos</h1>
+<h1 class="h3 mb-4 text-gray-800"><i class="fas fa-history me-2"></i>Historial y Agenda de Servicios</h1>
 
-<!-- Formulario de Filtros -->
+<!-- Formulario de Filtros Actualizado -->
 <div class="card shadow mb-4">
-  <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-danger">Filtros de Búsqueda</h6>
-  </div>
+  <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-danger">Filtros de Búsqueda</h6></div>
   <div class="card-body">
     <form action="/reports/maintenance" method="GET" class="row g-3 align-items-end">
-      <div class="col-md-3">
-        <label for="truck" class="form-label">Filtrar por Camión</label>
-        <select name="truck" id="truck" class="form-select">
-          <option value="">Todos los Camiones</option>
-          <% trucks.forEach(function(t) { %>
-            <option value="<%= t._id %>" <%= filters.truck == t._id ? 'selected' : '' %>><%= t.alias || t.placa %></option>
-          <% }); %>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label for="type" class="form-label">Filtrar por Tipo</label>
-        <select name="type" id="type" class="form-select">
-          <option value="">Todos los Tipos</option>
-          <% operationTypes.forEach(function(ot) { %>
-            <option value="<%= ot.name %>" <%= filters.type == ot.name ? 'selected' : '' %>><%= ot.name %></option>
-          <% }); %>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label for="startDate" class="form-label">Desde</label>
-        <input type="date" name="startDate" id="startDate" class="form-control" value="<%= filters.startDate || '' %>">
-      </div>
-      <div class="col-md-2">
-        <label for="endDate" class="form-label">Hasta</label>
-        <input type="date" name="endDate" id="endDate" class="form-control" value="<%= filters.endDate || '' %>">
-      </div>
-      <div class="col-md-2 d-flex">
-        <button type="submit" class="btn btn-danger w-100 me-2">Filtrar</button>
-        <a href="/reports/maintenance" class="btn btn-secondary w-100">Limpiar</a>
-      </div>
+      <div class="col-md-3"><label for="eventName" class="form-label">Nombre del Servicio</label><input type="text" name="eventName" id="eventName" class="form-control" value="<%= filters.eventName || '' %>" placeholder="Ej: Servicio Menor"></div>
+      <div class="col-md-2"><label for="truck" class="form-label">Camión</label><select name="truck" id="truck" class="form-select"><option value="">Todos</option><% trucks.forEach(function(t) { %><option value="<%= t._id %>" <%= filters.truck == t._id ? 'selected' : '' %>><%= t.alias || t.placa %></option><% }); %></select></div>
+      <div class="col-md-2"><label for="type" class="form-label">Tipo de Ítem</label><select name="type" id="type" class="form-select"><option value="">Todos</option><% operationTypes.forEach(function(ot) { %><option value="<%= ot.name %>" <%= filters.type == ot.name ? 'selected' : '' %>><%= ot.name %></option><% }); %></select></div>
+      <div class="col-md-2"><label for="startDate" class="form-label">Desde</label><input type="date" name="startDate" id="startDate" class="form-control" value="<%= filters.startDate || '' %>"></div>
+      <div class="col-md-2"><label for="endDate" class="form-label">Hasta</label><input type="date" name="endDate" id="endDate" class="form-control" value="<%= filters.endDate || '' %>"></div>
+      <div class="col-md-1 d-grid"><button type="submit" class="btn btn-danger">Filtrar</button></div>
+      <div class="col-md-12 text-end mt-2"><a href="/reports/maintenance" class="btn btn-sm btn-link">Limpiar filtros</a></div>
     </form>
   </div>
 </div>
 
 <!-- Pestañas para Historial y Próximos Servicios -->
 <ul class="nav nav-tabs" id="myTab" role="tablist">
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="true">
-      Historial de Mantenimientos (<%= maintenances.length %>)
-    </button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link position-relative" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="false">
-      Próximos Servicios
-      <% if (upcomingServices.length > 0) { %>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"><%= upcomingServices.length %></span>
-      <% } %>
-    </button>
-  </li>
+  <li class="nav-item" role="presentation"><button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">Historial General (<%= maintenances.length %>)</button></li>
+  <li class="nav-item" role="presentation"><button class="nav-link position-relative" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button">Agenda de Próximos Servicios <% if (upcomingServices.length > 0) { %><span class="badge rounded-pill bg-danger"><%= upcomingServices.length %></span><% } %></button></li>
 </ul>
 
 <div class="tab-content" id="myTabContent">
-  <!-- Contenido de la pestaña Historial -->
-  <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
-    <div class="card shadow mb-4">
+  <!-- Contenido de la pestaña Historial (AHORA CON ACORDEÓN) -->
+  <div class="tab-pane fade show active" id="history" role="tabpanel">
+    <div class="card shadow border-top-0">
       <div class="card-body">
-        <div class="d-flex justify-content-end align-items-center mb-3">
-          <h5 class="text-danger">Costo Total (Filtrado): <span class="fw-bold">$<%= totalCost.toFixed(2) %></span></h5>
+        <div class="d-flex justify-content-end align-items-center mb-3 gap-4">
+          <% if (Object.keys(totalCosts).length === 0 && maintenances.length > 0) { %>
+             <p class="text-muted mb-0">No se encontraron costos para los filtros seleccionados.</p>
+          <% } %>
+          <% if (totalCosts.GTQ) { %><h5 class="text-danger mb-0">Total: <span class="fw-bold">Q<%= totalCosts.GTQ.toFixed(2) %></span></h5><% } %>
+          <% if (totalCosts.USD) { %><h5 class="text-danger mb-0">Total: <span class="fw-bold">$<%= totalCosts.USD.toFixed(2) %></span></h5><% } %>
         </div>
-        <div class="table-responsive">
-          <table class="table table-bordered" width="100%" cellspacing="0">
-            <thead>
-              <tr>
-                <th>Camión</th>
-                <th>Tipo</th>
-                <th>Marca</th>
-                <th>Fecha</th>
-                <th>Kilometraje</th>
-                <th>Costo</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% maintenances.forEach(function(m) { %>
-                <tr>
-                  <td><a href="/trucks/<%= m.truck._id %>"><%= m.truck.alias || m.truck.placa %></a></td>
-                  <td><%= m.type %></td>
-                  <td><%= m.brand || 'N/A' %></td>
-                  <td><%= new Date(m.date).toLocaleDateString('es-ES') %></td>
-                  <td><%= m.mileage.toLocaleString('es-ES') %> km</td>
-                  <td>$<%= m.cost.toFixed(2) %></td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
+        <% if (maintenances.length > 0) { %>
+          <div class="accordion" id="maintenanceReportAccordion">
+            <% maintenances.forEach(function(event, index) { %>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReport<%= index %>">
+                    <div class="d-flex justify-content-between w-100 me-3">
+                      <div><strong class="text-dark"><%= event.truck.alias || event.truck.placa %>:</strong> <%= event.eventName %></div>
+                      <span class="text-muted"><%= new Date(event.date).toLocaleDateString('es-ES') %></span>
+                    </div>
+                  </button>
+                </h2>
+                <div id="collapseReport<%= index %>" class="accordion-collapse collapse" data-bs-parent="#maintenanceReportAccordion">
+                  <div class="accordion-body">
+                    <% if (event.mechanicName) { %><p class="mb-2 text-muted"><strong>Mecánico:</strong> <%= event.mechanicName %></p><% } %>
+                    <ul class="list-group list-group-flush mb-3"><% event.serviceItems.forEach(function(item) { %><li class="list-group-item d-flex justify-content-between align-items-center px-0"><div><strong><%= item.type %></strong><% if (item.brand) { %><small class="d-block text-muted">Marca: <%= item.brand %></small><% } %></div><span class="fw-bold"><%= event.currency === 'GTQ' ? 'Q' : '$' %><%= Number(item.cost).toFixed(2) %></span></li><% }); %></ul>
+                    <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
+                      <strong class="text-danger fs-5">TOTAL: <%= event.currency === 'GTQ' ? 'Q' : '$' %><%= event.totalCost.toFixed(2) %></strong>
+                      <a href="/trucks/<%= event.truck._id %>?highlight=<%= event._id %>" class="btn btn-outline-secondary btn-sm">Ver/Editar en Historial &rarr;</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %><div class="text-center p-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><h5 class="text-muted">No se encontraron registros con los filtros seleccionados.</h5></div><% } %>
       </div>
     </div>
   </div>
-
-  <!-- Contenido de la pestaña Próximos Servicios -->
-  <div class="tab-pane fade" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
-    <div class="card shadow mb-4">
-      <div class="card-body">
-        <% if (upcomingServices.length > 0) { %>
-          <div class="list-group">
-            <% upcomingServices.forEach(function(s) { %>
-              <a href="/trucks/<%= s.truck._id %>" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1"><%= s.truck.alias || s.truck.placa %></h5>
-                  <small class="text-danger fw-bold"><%= new Date(s.nextServiceDate).toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}) %></small>
-                </div>
-                <p class="mb-1">Próximo servicio de: <strong><%= s.type %></strong></p>
-              </a>
-            <% }); %>
-          </div>
-        <% } else { %>
-          <p class="text-center text-muted mt-4">No hay servicios programados próximamente.</p>
-        <% } %>
-      </div>
-    </div>
+  
+  <!-- Contenido de la pestaña Próximos Servicios (con el flujo "Realizar Servicio") -->
+  <div class="tab-pane fade" id="upcoming" role="tabpanel">
+    <div class="card shadow border-top-0"><div class="card-body">
+      <% if (upcomingServices.length > 0) { %>
+        <div class="list-group">
+          <% upcomingServices.forEach(function(s) { %>
+            <div class="list-group-item"><div class="d-flex w-100 justify-content-between align-items-center"><div><a href="/trucks/<%= s.truck._id %>" class="text-decoration-none"><h5 class="mb-1"><%= s.truck.alias || s.truck.placa %></h5></a><p class="mb-1">Servicio programado: <strong><%= s.eventName || s.type %></strong></p><small class="text-danger fw-bold"><%= new Date(s.nextServiceDate).toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}) %></small></div><a href="/trucks/<%= s.truck._id %>?action=complete&serviceId=<%= s._id %>" class="btn btn-sm btn-success"><i class="fas fa-check-circle me-1"></i> Realizar Servicio</a></div></div>
+          <% }); %>
+        </div>
+      <% } else { %><p class="text-center text-muted mt-4">No hay servicios programados próximamente.</p><% } %>
+    </div></div>
   </div>
 </div>

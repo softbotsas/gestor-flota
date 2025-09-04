@@ -1,76 +1,88 @@
-// controllers/maintenance.controller.js
-// VERSIÓN FINAL CON "SOFT DELETE", RECORDATORIOS Y MONEDA
-
+// controllers/maintenance.controller.js (ADAPTADO PARA 'mechanicName')
 const maintenanceCtrl = {};
 const Maintenance = require('../models/Maintenance');
 
-// --- MÉTODO PARA CREAR UN NUEVO REGISTRO ---
+// --- CREAR UN NUEVO SERVICIO ---
 maintenanceCtrl.createMaintenance = async (req, res) => {
   const { truckId } = req.params;
-  // Añadimos 'currency' a los datos que recibimos del formulario.
-  const { type, date, cost, details, nextServiceDate, mileage, brand, reminderDays, currency } = req.body;
-
-  if (!req.file) {
-    return res.status(400).send('Error: No se ha subido ninguna imagen.');
-  }
+  // Añadimos 'mechanicName' a la lista de datos extraídos.
+  const { 
+    eventName, date, mileage, currency, nextServiceDate, 
+    reminderDays, serviceItems, completedServiceId, mechanicName
+  } = req.body;
 
   try {
+    const parsedItems = JSON.parse(serviceItems);
+    const totalCost = parsedItems.reduce((sum, item) => sum + Number(item.cost), 0);
+
     const newMaintenance = new Maintenance({
       truck: truckId,
-      type, date, cost, details,
+      eventName, date, mileage, currency, totalCost,
+      mechanicName, // <-- Se añade aquí
       nextServiceDate: nextServiceDate || null,
-      receiptImage: '/uploads/' + req.file.filename,
-      mileage, brand,
       reminderDays: reminderDays || null,
-      currency // Guardamos el nuevo campo de moneda.
+      serviceItems: parsedItems,
+      receiptImage: req.file ? '/uploads/' + req.file.filename : null
     });
 
     await newMaintenance.save();
+
+    if (completedServiceId) {
+      await Maintenance.findByIdAndUpdate(completedServiceId, { isCompleted: true });
+    }
+
     res.redirect(`/trucks/${truckId}`);
   } catch (error) {
-    console.error("Error al guardar el mantenimiento:", error);
+    console.error("Error al guardar el servicio:", error);
     res.status(500).send("Ocurrió un error al guardar el registro.");
   }
 };
 
-// --- MÉTODO PARA ACTUALIZAR UN REGISTRO ---
+// --- ACTUALIZAR UN SERVICIO ---
 maintenanceCtrl.updateMaintenance = async (req, res) => {
   const { id } = req.params;
-  // Añadimos 'currency' a los datos que recibimos del formulario.
-  const { type, date, cost, details, nextServiceDate, mileage, brand, reminderDays, currency } = req.body;
+  // Añadimos 'mechanicName' a la lista.
+  const { 
+    eventName, date, mileage, currency, nextServiceDate, 
+    reminderDays, serviceItems, mechanicName
+  } = req.body;
 
   try {
-    const maintenanceToUpdate = await Maintenance.findById(id);
-    if (!maintenanceToUpdate) {
-      return res.status(404).send("Registro no encontrado para actualizar.");
-    }
+    const parsedItems = JSON.parse(serviceItems);
+    const totalCost = parsedItems.reduce((sum, item) => sum + Number(item.cost), 0);
 
-    // Añadimos el nuevo campo al objeto de datos a actualizar.
-    let updateData = { type, date, cost, details, nextServiceDate, mileage, brand, reminderDays: reminderDays || null, currency };
+    let updateData = {
+      eventName, date, mileage, currency, totalCost,
+      mechanicName, // <-- Se añade aquí
+      nextServiceDate: nextServiceDate || null,
+      reminderDays: reminderDays || null,
+      serviceItems: parsedItems
+    };
 
     if (req.file) {
       updateData.receiptImage = '/uploads/' + req.file.filename;
     }
 
-    await Maintenance.findByIdAndUpdate(id, updateData);
-    res.redirect(`/trucks/${maintenanceToUpdate.truck}`);
+    const updatedMaintenance = await Maintenance.findByIdAndUpdate(id, updateData, { new: true });
+    
+    res.redirect(`/trucks/${updatedMaintenance.truck}`);
   } catch (error) {
-    console.error("Error al actualizar el mantenimiento:", error);
+    console.error("Error al actualizar el servicio:", error);
     res.status(500).send("Ocurrió un error al actualizar el registro.");
   }
 };
 
-// --- MÉTODO DE BORRADO SUAVE (SOFT DELETE) ---
+// --- BORRADO SUAVE DE UN SERVICIO ---
 maintenanceCtrl.deleteMaintenance = async (req, res) => {
   const { id } = req.params;
   try {
-    const maintenance = await Maintenance.findById(id);
+    const eventToDelete = await Maintenance.findById(id);
     
-    if (maintenance) {
+    if (eventToDelete) {
       await Maintenance.findByIdAndUpdate(id, { isActive: false });
-      return res.redirect(`/trucks/${maintenance.truck}`);
+      return res.redirect(`/trucks/${eventToDelete.truck}`);
     } else {
-      return res.status(404).send('Registro no encontrado.');
+      return res.status(404).send('Servicio no encontrado.');
     }
   } catch (error) {
     console.error("Error al realizar el borrado suave:", error);

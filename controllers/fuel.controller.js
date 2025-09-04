@@ -1,16 +1,15 @@
-// controllers/fuel.controller.js (VERSIÓN FINAL CON MONEDA)
+// controllers/fuel.controller.js (COMPLETO Y VERIFICADO)
 const fuelCtrl = {};
 const Fuel = require('../models/Fuel');
 const Truck = require('../models/Truck');
 
-// --- RENDERIZAR LA PÁGINA DE REGISTRO DE COMBUSTIBLE ---
+// --- RENDERIZAR LA PÁGINA PRINCIPAL DE COMBUSTIBLE ---
 fuelCtrl.renderFuelPage = async (req, res) => {
   try {
     const [fuelRecords, trucks] = await Promise.all([
       Fuel.find({ isActive: true }).populate('truck', 'placa alias').sort({ date: 'desc' }).limit(50).lean(),
-      Truck.find().sort({ alias: 'asc' }).lean()
+      Truck.find({ status: 'Activo' }).sort({ alias: 'asc' }).lean() // Asumiendo futuro status
     ]);
-
     res.render('fuel/fuel-log', {
       layout: 'layouts/main',
       fuelRecords,
@@ -24,13 +23,11 @@ fuelCtrl.renderFuelPage = async (req, res) => {
 
 // --- CREAR UN NUEVO REGISTRO DE COMBUSTIBLE ---
 fuelCtrl.createFuelRecord = async (req, res) => {
-  // Añadimos 'currency' a los datos que recibimos.
   const { truck, date, mileage, quantity, unit, cost, pricePerUnit, currency } = req.body;
   if (!req.file) { return res.status(400).send('Error: Se requiere el comprobante.'); }
   try {
     const newFuelRecord = new Fuel({
-      truck, date, mileage, quantity, unit, cost, pricePerUnit,
-      currency, // Guardamos el nuevo campo.
+      truck, date, mileage, quantity, unit, cost, pricePerUnit, currency,
       receiptImage: '/uploads/' + req.file.filename
     });
     await newFuelRecord.save();
@@ -44,12 +41,15 @@ fuelCtrl.createFuelRecord = async (req, res) => {
 // --- ACTUALIZAR UN REGISTRO DE COMBUSTIBLE ---
 fuelCtrl.updateFuelRecord = async (req, res) => {
   const { id } = req.params;
-  // Añadimos 'currency' a los datos que recibimos.
   const { truck, date, mileage, quantity, unit, cost, pricePerUnit, currency } = req.body;
   try {
-    // Añadimos 'currency' al objeto de actualización.
     let updateData = { truck, date, mileage, quantity, unit, cost, pricePerUnit, currency };
-    if (req.file) { updateData.receiptImage = '/uploads/' + req.file.filename; }
+    if (req.file) {
+      // Opcional: Borrar la imagen anterior si se desea
+      // const record = await Fuel.findById(id);
+      // await fs.unlink(path.resolve('./public' + record.receiptImage));
+      updateData.receiptImage = '/uploads/' + req.file.filename;
+    }
     await Fuel.findByIdAndUpdate(id, updateData);
     res.redirect('/fuel');
   } catch (error) {

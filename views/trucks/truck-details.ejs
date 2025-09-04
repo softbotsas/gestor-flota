@@ -1,6 +1,8 @@
 <% layout('layouts/main') %>
 
-<!-- Encabezado de la Página de Detalles -->
+<!-- ======================================================= -->
+<!-- ============= SECCIÓN DE CONTENIDO PRINCIPAL ========== -->
+<!-- ======================================================= -->
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <div>
     <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-truck-moving text-danger"></i> Detalles del Camión</h1>
@@ -13,7 +15,7 @@
 </div>
 
 <div class="row">
-  <!-- Columna de Información Principal (Ficha Técnica) -->
+  <!-- Columna de Ficha Técnica -->
   <div class="col-lg-4">
     <div class="card shadow mb-4">
       <div class="card-header py-3 bg-dark text-white"><h6 class="m-0 font-weight-bold">Ficha Técnica</h6></div>
@@ -30,209 +32,434 @@
     </div>
   </div>
 
-  <!-- Columna de Historial de Operaciones -->
+  <!-- Columna de Historial de Mantenimientos (CON ESTRUCTURA HTML CORREGIDA) -->
   <div class="col-lg-8">
     <div class="card shadow mb-4">
       <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <h6 class="m-0 font-weight-bold text-danger">Historial de Operaciones</h6>
-        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal"><i class="fas fa-plus me-1"></i> Registrar Operación</button>
+        <h6 class="m-0 font-weight-bold text-danger">Historial de Mantenimientos</h6>
+        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal"><i class="fas fa-plus me-1"></i> Registrar Servicio</button>
       </div>
       <div class="card-body">
         <% if (maintenances.length > 0) { %>
-          <div class="list-group list-group-flush">
-            <% maintenances.forEach(function(maint) { %>
-              <div class="list-group-item py-3">
-                <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1 fw-bold"><%= maint.type %> <% if (maint.brand) { %> <span class="badge bg-secondary fw-normal"><%= maint.brand %></span> <% } %></h5>
-                  <small class="text-muted"><%= new Date(maint.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) %></small>
-                </div>
-                <p class="mb-1"><%= maint.details || 'Sin detalles adicionales.' %></p>
-                <% if (maint.mileage) { %><small class="text-muted"><strong>Kilometraje:</strong> <%= maint.mileage.toLocaleString('es-ES') %> km</small><% } %>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                  <strong class="text-danger fs-5"><%= maint.currency === 'GTQ' ? 'Q' : '$' %><%= maint.cost.toFixed(2) %></strong>
-                  <div>
-                    <a href="<%= maint.receiptImage %>" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver Comprobante"><i class="fas fa-receipt"></i></a>
-                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editMaintenanceModal" data-id="<%= maint._id %>" data-type="<%= maint.type %>" data-brand="<%= maint.brand || '' %>" data-mileage="<%= maint.mileage || '' %>" data-date="<%= new Date(maint.date).toISOString().split('T')[0] %>" data-cost="<%= maint.cost %>" data-details="<%= maint.details || '' %>" data-nextservicedate="<%= maint.nextServiceDate ? new Date(maint.nextServiceDate).toISOString().split('T')[0] : '' %>" data-reminderdays="<%= maint.reminderDays || '' %>" data-currency="<%= maint.currency %>" title="Editar Registro"><i class="fas fa-pencil-alt"></i></button>
-                    <form action="/maintenance/delete/<%= maint._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro?');"><button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar Registro"><i class="fas fa-trash"></i></button></form>
+          <div class="accordion" id="maintenanceHistoryAccordion">
+            <% maintenances.forEach(function(service, index) { %>
+              <div class="accordion-item" id="service-item-<%= service._id %>">
+                <h2 class="accordion-header" id="heading-<%= index %>">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index %>" aria-expanded="false" aria-controls="collapse-<%= index %>">
+                    <div class="d-flex justify-content-between w-100 me-3">
+                      <span><strong><%= service.eventName %></strong> - <%= service.mileage.toLocaleString('es-ES') %> km</span>
+                      <span class="text-muted"><%= new Date(service.date).toLocaleDateString('es-ES', { month: 'short', day: '2-digit', year: 'numeric' }) %></span>
+                    </div>
+                  </button>
+                </h2>
+                <div id="collapse-<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= index %>" data-bs-parent="#maintenanceHistoryAccordion">
+                  <div class="accordion-body">
+                    <% if (service.mechanicName) { %><p class="mb-2 text-muted"><strong>Mecánico:</strong> <%= service.mechanicName %></p><% } %>
+                    <ul class="list-group list-group-flush mb-3">
+                      <% service.serviceItems.forEach(function(item) { %><li class="list-group-item d-flex justify-content-between align-items-center px-0"><div><strong><%= item.type %></strong><% if (item.brand) { %><small class="d-block text-muted">Marca: <%= item.brand %></small><% } %><% if (item.details) { %><small class="d-block text-muted">Detalles: <%= item.details %></small><% } %></div><span class="fw-bold"><%= service.currency === 'GTQ' ? 'Q' : '$' %><%= Number(item.cost).toFixed(2) %></span></li><% }); %>
+                    </ul>
+                    <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
+                      <strong class="text-danger fs-5">TOTAL: <%= service.currency === 'GTQ' ? 'Q' : '$' %><%= service.totalCost.toFixed(2) %></strong>
+                      <div>
+                        <% if (service.receiptImage) { %><button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#imageViewerModal" data-image-url="<%= service.receiptImage %>"><i class="fas fa-receipt"></i> Recibo</button><% } %>
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editMaintenanceModal" data-service='<%- JSON.stringify(service) %>'><i class="fas fa-pencil-alt"></i> Editar</button>
+                        <form action="/maintenance/delete/<%= service._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar este servicio?');"><button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Eliminar</button></form>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             <% }); %>
           </div>
-        <% } else { %>
-          <div class="text-center text-muted mt-4 py-3"><i class="fas fa-tools fa-3x mb-2"></i><p class="mb-0">Aún no hay operaciones registradas.</p></div>
-        <% } %>
+        <% } else { %><div class="text-center text-muted mt-4 py-3"><i class="fas fa-tools fa-3x mb-2"></i><p class="mb-0">Aún no hay servicios registrados.</p></div><% } %>
       </div>
     </div>
   </div>
 </div>
+<!-- ======================================================= -->
+<!-- ======================= MODALES ======================= -->
+<!-- ======================================================= -->
 
-<!-- ======================================================= -->
-<!-- ============= MODAL PARA AÑADIR MANTENIMIENTO ========= -->
-<!-- ======================================================= -->
-<div class="modal fade" id="addMaintenanceModal" tabindex="-1" aria-labelledby="addMaintenanceModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<!-- Modal para AÑADIR Servicio -->
+<div class="modal fade" id="addMaintenanceModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="addMaintenanceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header bg-dark text-white"><h5 class="modal-title" id="addMaintenanceModalLabel"><i class="fas fa-wrench me-2"></i>Registrar Nueva Operación</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-header bg-dark text-white"><h5 class="modal-title" id="addMaintenanceModalLabel"><i class="fas fa-wrench me-2"></i>Registrar Nuevo Servicio</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
-        <form action="/maintenance/add/<%= truck._id %>" method="POST" enctype="multipart/form-data">
-          <div class="mb-3"><label for="addOperationTypeSelect" class="form-label">Tipo de Operación</label><div class="input-group"><select class="form-select" name="type" id="addOperationTypeSelect" required><option selected disabled value="">-- Seleccione una opción --</option><% operationTypes.forEach(function(opType) { %><option value="<%= opType.name %>"><%= opType.name %></option><% }); %></select><button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#addOperationTypeModal"><i class="fas fa-plus"></i></button></div></div>
-          <div class="row"><div class="col-md-6 mb-3"><label for="addMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="addMileage" placeholder="Ej: 125000" required></div><div class="col-md-6 mb-3"><label for="addBrand" class="form-label">Marca del Repuesto (Opcional)</label><input type="text" class="form-control" name="brand" id="addBrand" placeholder="Ej: Casarella"></div></div>
+        <form id="addMaintenanceForm" method="POST" enctype="multipart/form-data">
           <div class="row">
-            <div class="col-md-6 mb-3"><label for="addDate" class="form-label">Fecha de la Operación</label><input type="date" class="form-control" name="date" id="addDate" required></div>
-            <div class="col-md-6 mb-3"><label for="addCost" class="form-label">Costo</label><div class="input-group"><input type="number" step="0.01" class="form-control" name="cost" id="addCost" placeholder="Ej: 800.00" required><select name="currency" class="form-select flex-grow-0" style="width: auto;"><option value="GTQ">GTQ</option><option value="USD">USD</option></select></div></div>
+            <div class="col-md-8"><div class="mb-3"><label for="addEventName" class="form-label">Nombre del Servicio</label><input type="text" class="form-control" name="eventName" id="addEventName" placeholder="Ej: Servicio Mayor 200.000km" required></div></div>
+            <div class="col-md-4"><div class="mb-3"><label for="addEventDate" class="form-label">Fecha</label><input type="date" class="form-control" name="date" id="addEventDate" required></div></div>
+            <div class="col-md-4"><div class="mb-3"><label for="addEventMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="addEventMileage" placeholder="200000" required></div></div>
+            <div class="col-md-4"><div class="mb-3"><label for="addEventCurrency" class="form-label">Moneda</label><select name="currency" id="addEventCurrency" class="form-select"><option value="GTQ" selected>Quetzales (GTQ)</option><option value="USD">Dólares (USD)</option></select></div></div>
+            <div class="col-md-4"><div class="mb-3"><label for="addMechanicName" class="form-label">Mecánico (Opcional)</label><input type="text" class="form-control" name="mechanicName" id="addMechanicName" placeholder="Ej: Juan Pérez"></div></div>
           </div>
-          <div class="mb-3"><label for="addDetails" class="form-label">Detalles y Notas</label><textarea class="form-control" name="details" id="addDetails" rows="2"></textarea></div>
-          <div class="mb-3"><label for="addImage" class="form-label">Comprobante</label><input class="form-control" type="file" name="image" id="addImage" accept="image/*" required></div>
-          <div class="mb-3"><label for="addNextServiceDate" class="form-label">Fecha Próximo Servicio (Opcional)</label><input type="date" class="form-control" name="nextServiceDate" id="addNextServiceDate"></div>
-          <div class="mb-3" id="addReminderContainer" style="display: none;"><label for="addReminderDays" class="form-label">Recordar con anticipación (días)</label><input type="number" class="form-control" name="reminderDays" id="addReminderDays" placeholder="Ej: 7"></div>
-          <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-danger"><i class="fas fa-save me-2"></i>Guardar Registro</button></div>
+          <div class="mb-3"><label for="addEventReceipt" class="form-label">Recibo General (Opcional)</label><input class="form-control" type="file" name="image" id="addEventReceipt" accept="image/*"></div>
+          <hr>
+          <h6 class="mb-3">Ítems de Servicio</h6>
+          <div id="add-service-items-container"></div>
+          <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+            <button type="button" class="btn btn-outline-success btn-sm" id="add-service-item-btn"><i class="fas fa-plus me-1"></i> Añadir Ítem</button>
+            <h5 class="mb-0 text-danger fw-bold">Total Servicio: <span id="add-total-cost">Q0.00</span></h5>
+          </div>
+          <hr>
+          <h6 class="mb-3">Programar Próximo Servicio (Opcional)</h6>
+          <div class="row align-items-end">
+            <div class="col-md-6"><div class="mb-3"><label for="addNextServiceDate" class="form-label">Fecha Próximo Servicio</label><input type="date" class="form-control" name="nextServiceDate" id="addNextServiceDate"></div></div>
+            <div class="col-md-6" id="addReminderContainer" style="display: none;"><div class="mb-3"><label for="addReminderDays" class="form-label">Recordar (días antes)</label><input type="number" class="form-control" name="reminderDays" id="addReminderDays" placeholder="Ej: 7"></div></div>
+          </div>
+          <input type="hidden" name="serviceItems" id="addServiceItemsInput">
+          <input type="hidden" name="completedServiceId" id="completedServiceId">
         </form>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- ======================================================= -->
-<!-- ============= MODAL PARA AÑADIR TIPO DE OPERACIÓN ===== -->
-<!-- ======================================================= -->
-<div class="modal fade" id="addOperationTypeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Añadir Nuevo Tipo</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-      <div class="modal-body">
-        <form id="newOperationTypeForm"><div class="mb-3"><label for="newOperationTypeName" class="form-label">Nombre del Tipo</label><input type="text" class="form-control" id="newOperationTypeName" placeholder="Ej: Cambio de Correas" required><div id="opTypeError" class="form-text text-danger d-none"></div></div><div class="d-grid"><button type="submit" class="btn btn-danger">Guardar Tipo</button></div></form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger" form="addMaintenanceForm" id="submitAddFormBtn"><i class="fas fa-save me-2"></i>Guardar Servicio</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ======================================================= -->
-<!-- ============= MODAL PARA EDITAR CAMIÓN ================ -->
-<!-- ======================================================= -->
+<!-- Modal para EDITAR Servicio -->
+<div class="modal fade" id="editMaintenanceModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="editMaintenanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white"><h5 class="modal-title" id="editMaintenanceModalLabel"><i class="fas fa-pencil-alt me-2"></i>Editar Servicio</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <form id="editMaintenanceForm" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="_method" value="PUT">
+                    <div class="row">
+                        <div class="col-md-8"><div class="mb-3"><label for="editEventName" class="form-label">Nombre del Servicio</label><input type="text" class="form-control" name="eventName" id="editEventName" required></div></div>
+                        <div class="col-md-4"><div class="mb-3"><label for="editEventDate" class="form-label">Fecha</label><input type="date" class="form-control" name="date" id="editEventDate" required></div></div>
+                        <div class="col-md-4"><div class="mb-3"><label for="editEventMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="editEventMileage" required></div></div>
+                        <div class="col-md-4"><div class="mb-3"><label for="editEventCurrency" class="form-label">Moneda</label><select name="currency" id="editEventCurrency" class="form-select"><option value="GTQ">Quetzales (GTQ)</option><option value="USD">Dólares (USD)</option></select></div></div>
+                        <div class="col-md-4"><div class="mb-3"><label for="editMechanicName" class="form-label">Mecánico (Opcional)</label><input type="text" class="form-control" name="mechanicName" id="editMechanicName"></div></div>
+                    </div>
+                    <div class="mb-3"><label for="editEventReceipt" class="form-label">Nuevo Recibo (Opcional)</label><input type="file" name="image" class="form-control" id="editEventReceipt" accept="image/*"><div class="form-text">Sube un archivo solo si quieres reemplazar el existente.</div></div>
+                    <hr>
+                    <h6 class="mb-3">Ítems de Servicio</h6>
+                    <div id="edit-service-items-container"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+                        <button type="button" class="btn btn-outline-success btn-sm" id="edit-service-item-btn"><i class="fas fa-plus me-1"></i> Añadir Ítem</button>
+                        <h5 class="mb-0 text-danger fw-bold">Total Servicio: <span id="edit-total-cost">Q0.00</span></h5>
+                    </div>
+                    <hr>
+                    <h6 class="mb-3">Programar Próximo Servicio (Opcional)</h6>
+                    <div class="row align-items-end">
+                        <div class="col-md-6"><div class="mb-3"><label for="editNextServiceDate" class="form-label">Fecha Próximo Servicio</label><input type="date" class="form-control" name="nextServiceDate" id="editNextServiceDate"></div></div>
+                        <div class="col-md-6" id="editReminderContainer" style="display: none;"><div class="mb-3"><label for="editReminderDays" class="form-label">Recordar (días antes)</label><input type="number" class="form-control" name="reminderDays" id="editReminderDays"></div></div>
+                    </div>
+                    <input type="hidden" name="serviceItems" id="editServiceItemsInput">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" form="editMaintenanceForm" id="submitEditFormBtn"><i class="fas fa-save me-2"></i>Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para EDITAR CAMIÓN -->
 <div class="modal fade" id="editTruckModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-truck me-2"></i>Editar Información del Camión</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-truck me-2"></i>Editar Información del Camión</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
-        <form action="/trucks/update/<%= truck._id %>?_method=PUT" method="POST"><div class="mb-3"><label for="placa" class="form-label">Placa / Matrícula</label><input type="text" class="form-control" name="placa" value="<%= truck.placa %>" required></div><div class="mb-3"><label for="marca" class="form-label">Marca</label><input type="text" class="form-control" name="marca" value="<%= truck.marca %>" required></div><div class="mb-3"><label for="modelo" class="form-label">Modelo</label><input type="text" class="form-control" name="modelo" value="<%= truck.modelo %>" required></div><div class="mb-3"><label for="año" class="form-label">Año</label><input type="number" class="form-control" name="año" value="<%= truck.año %>" required></div><div class="mb-3"><label for="alias" class="form-label">Alias (Opcional)</label><input type="text" class="form-control" name="alias" value="<%= truck.alias || '' %>"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button></div></form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ======================================================= -->
-<!-- ============= MODAL PARA EDITAR MANTENIMIENTO ========= -->
-<!-- ======================================================= -->
-<div class="modal fade" id="editMaintenanceModal" tabindex="-1" aria-labelledby="editMaintenanceModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-dark text-white"><h5 class="modal-title" id="editMaintenanceModalLabel"><i class="fas fa-pencil-alt me-2"></i>Editar Registro de Operación</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
-      <div class="modal-body">
-        <form id="editMaintenanceForm" method="POST" enctype="multipart/form-data"><input type="hidden" name="_method" value="PUT"><div class="mb-3"><label for="editOperationTypeSelect" class="form-label">Tipo de Operación</label><select class="form-select" name="type" id="editOperationTypeSelect" required><% operationTypes.forEach(function(opType) { %><option value="<%= opType.name %>"><%= opType.name %></option><% }); %></select></div><div class="row"><div class="col-md-6 mb-3"><label for="editMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="editMileage" required></div><div class="col-md-6 mb-3"><label for="editBrand" class="form-label">Marca del Repuesto (Opcional)</label><input type="text" class="form-control" name="brand" id="editBrand"></div></div><div class="row">
-            <div class="col-md-6 mb-3"><label for="editDate" class="form-label">Fecha de la Operación</label><input type="date" class="form-control" name="date" id="editDate" required></div>
-            <div class="col-md-6 mb-3"><label for="editCost" class="form-label">Costo</label><div class="input-group"><input type="number" step="0.01" class="form-control" name="cost" id="editCost" required><select name="currency" id="editCurrency" class="form-select flex-grow-0" style="width: auto;"><option value="GTQ">GTQ</option><option value="USD">USD</option></select></div></div>
-          </div><div class="mb-3"><label for="editDetails" class="form-label">Detalles y Notas</label><textarea class="form-control" name="details" id="editDetails" rows="2"></textarea></div><div class="mb-3"><label for="editImage" class="form-label">Nuevo Comprobante (Opcional)</label><input class="form-control" type="file" name="image" id="editImage" accept="image/*"><div class="form-text">Sube un archivo solo si quieres reemplazar el existente.</div></div><div class="mb-3"><label for="editNextServiceDate" class="form-label">Fecha Próximo Servicio (Opcional)</label><input type="date" class="form-control" name="nextServiceDate" id="editNextServiceDate"></div><div class="mb-3" id="editReminderContainer" style="display: none;"><label for="editReminderDays" class="form-label">Recordar con anticipación (días)</label><input type="number" class="form-control" name="reminderDays" id="editReminderDays"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button></div>
+<!-- =================== REEMPLAZO (HTML del form de editar camión) =================== -->
+        <form action="/trucks/update/<%= truck._id %>?_method=PUT" method="POST">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="placa" class="form-label">Placa / Matrícula</label>
+              <input type="text" class="form-control" name="placa" value="<%= truck.placa %>" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="alias" class="form-label">Alias (Opcional)</label>
+              <input type="text" class="form-control" name="alias" value="<%= truck.alias || '' %>">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="marca" class="form-label">Marca</label>
+              <input type="text" class="form-control" name="marca" value="<%= truck.marca %>" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="modelo" class="form-label">Modelo</label>
+              <input type="text" class="form-control" name="modelo" value="<%= truck.modelo %>" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="año" class="form-label">Año</label>
+              <input type="number" class="form-control" name="año" value="<%= truck.año %>" required>
+            </div>
+            <!-- ¡NUEVO CAMPO! -->
+            <div class="col-md-6 mb-3">
+              <label for="status" class="form-label">Estado</label>
+              <select name="status" id="status" class="form-select">
+                <option value="Activo" <%= truck.status === 'Activo' ? 'selected' : '' %>>Activo</option>
+                <option value="Inactivo" <%= truck.status === 'Inactivo' ? 'selected' : '' %>>Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar Cambios</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal para AÑADIR NUEVO TIPO DE SERVICIO -->
+<div class="modal fade" id="addOperationTypeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Añadir Nuevo Tipo de Servicio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newOperationTypeForm">
+          <div class="mb-3">
+            <label for="newOperationTypeName" class="form-label">Nombre del Tipo</label>
+            <input type="text" class="form-control" id="newOperationTypeName" placeholder="Ej: Cambio de Filtros" required>
+            <div id="opTypeError" class="form-text text-danger d-none"></div>
+          </div>
+          <div class="d-grid"><button type="submit" class="btn btn-danger">Guardar Tipo</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para VISUALIZAR IMAGEN -->
+<div class="modal fade" id="imageViewerModal" tabindex="-1" aria-labelledby="imageViewerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageViewerModalLabel">Comprobante de Servicio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="receiptImageTag" src="" alt="Comprobante de Servicio" class="img-fluid rounded">
+      </div>
+      <div class="modal-footer">
+        <a id="downloadReceiptBtn" href="#" download class="btn btn-success"><i class="fas fa-download me-2"></i>Descargar</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- ======================================================= -->
-<!-- =============== SCRIPT DE JAVASCRIPT ================== -->
+<!-- ============= SCRIPT FINAL Y DEFENSIVO ================ -->
 <!-- ======================================================= -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPO DE RECORDATORIO (MODAL DE AÑADIR) ---
-    const addNextServiceDateInput = document.getElementById('addNextServiceDate');
-    const addReminderContainer = document.getElementById('addReminderContainer');
-    addNextServiceDateInput.addEventListener('change', () => { addReminderContainer.style.display = addNextServiceDateInput.value ? 'block' : 'none'; });
-
-    // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPO DE RECORDATORIO (MODAL DE EDITAR) ---
-    const editNextServiceDateInput = document.getElementById('editNextServiceDate');
-    const editReminderContainer = document.getElementById('editReminderContainer');
-    editNextServiceDateInput.addEventListener('change', () => { editReminderContainer.style.display = editNextServiceDateInput.value ? 'block' : 'none'; });
-
-    // --- SCRIPT PARA AÑADIR NUEVO TIPO DE OPERACIÓN ---
-    const newOperationTypeForm = document.getElementById('newOperationTypeForm');
-    if (newOperationTypeForm) {
-      const newOperationTypeNameInput = document.getElementById('newOperationTypeName');
-      const addOperationTypeSelect = document.getElementById('addOperationTypeSelect');
-      const editOperationTypeSelect = document.getElementById('editOperationTypeSelect');
-      const opTypeErrorDiv = document.getElementById('opTypeError');
-      const addOperationTypeModalInstance = new bootstrap.Modal(document.getElementById('addOperationTypeModal'));
-      newOperationTypeForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const newName = newOperationTypeNameInput.value.trim();
-        if (!newName) return;
-        try {
-          const response = await fetch('/operation-types/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName }) });
-          const data = await response.json();
-          if (data.success) {
-            const newOption = document.createElement('option');
-            newOption.value = data.newType.name;
-            newOption.textContent = data.newType.name;
-            addOperationTypeSelect.appendChild(newOption);
-            const newOptionForEdit = newOption.cloneNode(true);
-            editOperationTypeSelect.appendChild(newOptionForEdit);
-            newOption.selected = true;
-            newOperationTypeNameInput.value = '';
-            opTypeErrorDiv.classList.add('d-none');
-            addOperationTypeModalInstance.hide();
-          } else {
-            opTypeErrorDiv.textContent = data.message;
-            opTypeErrorDiv.classList.remove('d-none');
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          opTypeErrorDiv.textContent = 'Ocurrió un error de red.';
-          opTypeErrorDiv.classList.remove('d-none');
-        }
-      });
-    }
-
-    // --- SCRIPT PARA POBLAR EL MODAL DE EDICIÓN ---
-    const editMaintenanceModal = document.getElementById('editMaintenanceModal');
-    if (editMaintenanceModal) {
-      editMaintenanceModal.addEventListener('show.bs.modal', (event) => {
-        const button = event.relatedTarget;
-        const id = button.getAttribute('data-id');
-        const type = button.getAttribute('data-type');
-        const brand = button.getAttribute('data-brand');
-        const mileage = button.getAttribute('data-mileage');
-        const date = button.getAttribute('data-date');
-        const cost = button.getAttribute('data-cost');
-        const currency = button.getAttribute('data-currency'); // <-- NUEVO
-        const details = button.getAttribute('data-details');
-        const nextServiceDate = button.getAttribute('data-nextservicedate');
-        const reminderDays = button.getAttribute('data-reminderdays');
-
-        const form = editMaintenanceModal.querySelector('#editMaintenanceForm');
-        const typeSelect = editMaintenanceModal.querySelector('#editOperationTypeSelect');
-        const brandInput = editMaintenanceModal.querySelector('#editBrand');
-        const mileageInput = editMaintenanceModal.querySelector('#editMileage');
-        const dateInput = editMaintenanceModal.querySelector('#editDate');
-        const costInput = editMaintenanceModal.querySelector('#editCost');
-        const currencySelect = editMaintenanceModal.querySelector('#editCurrency'); // <-- NUEVO
-        const detailsInput = editMaintenanceModal.querySelector('#editDetails');
-        const nextServiceDateInput = editMaintenanceModal.querySelector('#editNextServiceDate');
-        const reminderDaysInput = editMaintenanceModal.querySelector('#editReminderDays');
-
-        form.action = `/maintenance/update/${id}?_method=PUT`;
-        
-        typeSelect.value = type;
-        brandInput.value = brand;
-        mileageInput.value = mileage;
-        dateInput.value = date;
-        costInput.value = cost;
-        currencySelect.value = currency; // <-- NUEVO
-        detailsInput.value = details;
-        nextServiceDateInput.value = nextServiceDate;
-        reminderDaysInput.value = reminderDays;
-        
-        editReminderContainer.style.display = nextServiceDate ? 'block' : 'none';
-      });
-    }
+<%
+  // Construimos el string de opciones de forma segura en el lado del servidor para evitar errores de sintaxis en el cliente.
+  let opTypesHTML_safe = '<option value="" selected disabled>-- Seleccione tipo --</option>';
+  operationTypes.forEach(function(op) {
+    opTypesHTML_safe += `<option value="${op.name}">${op.name}</option>`;
   });
+%>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Inyectamos el HTML pre-construido en una variable de JavaScript.
+    let opTypesHTML = `<%- opTypesHTML_safe %>`;
+
+    // --- MÓDULO PARA AÑADIR NUEVO TIPO DE SERVICIO ---
+    const opTypeForm = document.getElementById('newOperationTypeForm');
+    if (opTypeForm) {
+        const opTypeModal = new bootstrap.Modal(document.getElementById('addOperationTypeModal'));
+        opTypeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('newOperationTypeName');
+            const errorDiv = document.getElementById('opTypeError');
+            const name = input.value.trim();
+            if (!name) return;
+
+            try {
+                const response = await fetch('/api/operation-types/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const newOptValue = data.newType.name;
+                    const newOptHTML = `<option value="${newOptValue}">${newOptValue}</option>`;
+                    opTypesHTML += newOptHTML; // Actualizamos la plantilla de opciones para futuras filas.
+                    
+                    document.querySelectorAll('.service-type').forEach(select => {
+                        const newOption = new Option(newOptValue, newOptValue);
+                        select.add(newOption);
+                    });
+                    
+                    input.value = '';
+                    errorDiv.classList.add('d-none');
+                    opTypeModal.hide();
+                } else {
+                    errorDiv.textContent = data.message;
+                    errorDiv.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error("Error al crear tipo de servicio:", error);
+            }
+        });
+    }
+
+    // --- MÓDULO PARA FORMULARIOS DINÁMICOS DE MANTENIMIENTO ---
+    const setupDynamicForm = (modalId, isEditMode) => {
+        const modalEl = document.getElementById(modalId);
+        if (!modalEl) return;
+        
+        const prefix = isEditMode ? 'edit' : 'add';
+        const form = document.getElementById(`${prefix}MaintenanceForm`);
+        const container = document.getElementById(`${prefix}-service-items-container`);
+        const addBtn = document.getElementById(`${prefix}-service-item-btn`);
+        const totalEl = document.getElementById(`${prefix}-total-cost`);
+        const currencyEl = document.getElementById(`${prefix}EventCurrency`);
+        const nextServiceDateInput = document.getElementById(`${prefix}NextServiceDate`);
+        const reminderContainer = document.getElementById(`${prefix}ReminderContainer`);
+
+        // Comprobación de seguridad: Si falta un elemento, la función no se ejecuta para ese modal.
+        if (!form || !container || !addBtn || !totalEl || !currencyEl || !nextServiceDateInput || !reminderContainer) {
+            console.warn(`Advertencia: Faltan elementos del DOM para el modal #${modalId}. La funcionalidad dinámica estará desactivada.`);
+            return;
+        }
+
+        const addServiceItemRow = (item = {}) => {
+            const row = document.createElement('div');
+            row.className = 'row g-2 align-items-center mb-2 service-item-row';
+            row.innerHTML = `<div class="col-md-3"><div class="input-group input-group-sm"><select class="form-select service-type" required>${opTypesHTML}</select><button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#addOperationTypeModal">+</button></div></div><div class="col-md-3"><input type="text" class="form-control form-control-sm service-brand" placeholder="Marca" value="${item.brand || ''}"></div><div class="col-md-2"><input type="number" step="0.01" class="form-control form-control-sm service-cost" placeholder="Costo" value="${item.cost || ''}" required></div><div class="col-md-3"><input type="text" class="form-control form-control-sm service-details" placeholder="Detalles" value="${item.details || ''}"></div><div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-item-btn">&times;</button></div>`;
+            if (item.type) { row.querySelector('.service-type').value = item.type; }
+            container.appendChild(row);
+        };
+        const updateTotals = () => { let total = 0; container.querySelectorAll('.service-cost').forEach(input => { total += parseFloat(input.value) || 0; }); const currencySymbol = currencyEl.value === 'GTQ' ? 'Q' : '$'; totalEl.textContent = `${currencySymbol}${total.toFixed(2)}`; };
+        const toggleReminder = () => { reminderContainer.style.display = nextServiceDateInput.value ? 'block' : 'none'; };
+        
+        addBtn.addEventListener('click', () => addServiceItemRow());
+        container.addEventListener('input', (e) => { if (e.target.classList.contains('service-cost')) updateTotals(); });
+        currencyEl.addEventListener('change', updateTotals);
+        container.addEventListener('click', (e) => { if (e.target.classList.contains('remove-item-btn')) { e.target.closest('.service-item-row').remove(); updateTotals(); } });
+        nextServiceDateInput.addEventListener('change', toggleReminder);
+        
+        form.addEventListener('submit', function(event) {
+            const serviceItemsInput = form.querySelector('input[name="serviceItems"]');
+            const items = []; let itemsValid = true;
+            container.querySelectorAll('.service-item-row').forEach(row => { const typeInput = row.querySelector('.service-type'); const costInput = row.querySelector('.service-cost'); if (!typeInput.value || !costInput.value) { itemsValid = false; } items.push({ type: typeInput.value, brand: row.querySelector('.service-brand').value, cost: costInput.value, details: row.querySelector('.service-details').value }); });
+            if (items.length === 0) { event.preventDefault(); alert('Debes añadir al menos un ítem de servicio.'); return; }
+            if (!itemsValid) { event.preventDefault(); alert('Por favor, completa el tipo y el costo para todos los ítems.'); return; }
+            serviceItemsInput.value = JSON.stringify(items);
+        });
+
+        modalEl.addEventListener('show.bs.modal', (event) => {
+            container.innerHTML = ''; form.reset();
+            if (isEditMode) {
+                const button = event.relatedTarget;
+                const serviceData = JSON.parse(button.getAttribute('data-service'));
+                form.action = `/maintenance/update/${serviceData._id}?_method=PUT`;
+                form.querySelector('[name="eventName"]').value = serviceData.eventName;
+                form.querySelector('[name="date"]').value = new Date(serviceData.date).toISOString().split('T')[0];
+                form.querySelector('[name="mileage"]').value = serviceData.mileage;
+                form.querySelector('[name="mechanicName"]').value = serviceData.mechanicName || '';
+                currencyEl.value = serviceData.currency;
+                form.querySelector('[name="nextServiceDate"]').value = serviceData.nextServiceDate ? new Date(serviceData.nextServiceDate).toISOString().split('T')[0] : '';
+                form.querySelector('[name="reminderDays"]').value = serviceData.reminderDays || '';
+                if (serviceData.serviceItems && serviceData.serviceItems.length > 0) {
+                    serviceData.serviceItems.forEach(item => addServiceItemRow(item));
+                } else {
+                    addServiceItemRow();
+                }
+            } else {
+                form.action = `/maintenance/add/<%= truck._id %>`;
+                addServiceItemRow();
+            }
+            updateTotals();
+            toggleReminder();
+        });
+    };
+
+    setupDynamicForm('addMaintenanceModal', false);
+    setupDynamicForm('editMaintenanceModal', true);
+
+    // --- MÓDULO PARA EL VISOR DE IMÁGENES ---
+    const imageModalEl = document.getElementById('imageViewerModal');
+    if (imageModalEl) {
+        const imageModal = new bootstrap.Modal(imageModalEl);
+        const imageTag = document.getElementById('receiptImageTag');
+        const downloadBtn = document.getElementById('downloadReceiptBtn');
+        document.body.addEventListener('click', function(event) {
+            const button = event.target.closest('[data-bs-target="#imageViewerModal"]');
+            if (button) {
+                event.preventDefault();
+                const imageUrl = button.getAttribute('data-image-url');
+                imageTag.src = imageUrl;
+                downloadBtn.href = imageUrl;
+                downloadBtn.download = `recibo_${imageUrl.split('/').pop()}`;
+                imageModal.show();
+            }
+        });
+        imageModalEl.addEventListener('hidden.bs.modal', () => { imageTag.src = ''; });
+    }
+    
+    // --- MÓDULO PARA ACTIVACIÓN DE "REALIZAR SERVICIO" POR URL ---
+    const handleUrlAction = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        const serviceId = urlParams.get('serviceId');
+        if (action === 'complete' && serviceId) {
+            const addModalEl = document.getElementById('addMaintenanceModal');
+            if (!addModalEl) return;
+            const addModal = new bootstrap.Modal(addModalEl);
+
+            const addForm = document.getElementById('addMaintenanceForm');
+            const addModalLabel = document.getElementById('addMaintenanceModalLabel');
+            const completedIdInput = document.getElementById('completedServiceId');
+            const eventNameInput = document.getElementById('addEventName');
+            try {
+                const response = await fetch(`/api/maintenance/${serviceId}`);
+                const data = await response.json();
+                if (data.success) {
+                    const service = data.maintenance;
+                    addModalLabel.innerHTML = `<i class="fas fa-check-circle me-2"></i>Completar: ${service.eventName || service.type}`;
+                    completedIdInput.value = service._id;
+                    eventNameInput.value = `Realizado: ${service.eventName || service.type}`;
+                    const mechanicNameInput = document.getElementById('addMechanicName');
+                    if (mechanicNameInput) mechanicNameInput.value = service.mechanicName || '';
+                    
+                    addModal.show();
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } catch (error) { console.error('Error al activar modal para completar servicio:', error); }
+        }
+    };
+
+    // --- MÓDULO PARA RESALTAR SERVICIO POR URL ---
+    const highlightAccordionItem = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const highlightId = urlParams.get('highlight');
+        if (highlightId) {
+            const accordionItem = document.getElementById(`service-item-${highlightId}`);
+            if (accordionItem) {
+                const button = accordionItem.querySelector('.accordion-button');
+                const collapseBody = accordionItem.querySelector('.accordion-collapse');
+                if (button && collapseBody) {
+                    setTimeout(() => {
+                        button.classList.remove('collapsed');
+                        button.setAttribute('aria-expanded', 'true');
+                        collapseBody.classList.add('show');
+                        accordionItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }, 300);
+                }
+            }
+        }
+    };
+
+    // --- EJECUCIÓN DE LAS FUNCIONES DE ARRANQUE ---
+    handleUrlAction();
+    highlightAccordionItem();
+});
 </script>

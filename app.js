@@ -74,7 +74,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Archivos estáticos (debe ir después de los middlewares principales)
+// Archivos estáticos (debe ir después de los middlewares principales) ajustes
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 5. RUTAS

@@ -1,3 +1,5 @@
+<!-- views/partials/navigation.ejs (COMPLETO, CORREGIDO Y SIN DESPLEGABLE) -->
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="/dashboard">
@@ -13,19 +15,23 @@
         <li class="nav-item">
           <a class="nav-link" href="/trucks">Camiones</a>
         </li>
+                <li class="nav-item">
+          <a class="nav-link" href="/reports/maintenance">Historial Mecanico</a>
+        </li>
         <li class="nav-item">
           <a class="nav-link" href="/fuel">Combustible</a>
         </li>
+        <!-- ¡ENLACE RESTAURADO Y CORREGIDO! -->
+
         <li class="nav-item">
-          <a class="nav-link" href="/reports">Reportes</a>
+            <a class="nav-link" href="/reports">Reportes</a>
         </li>
         
         <!-- Dropdown del Usuario y Cerrar Sesión -->
         <% if (user) { %>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fas fa-user me-1"></i>
-              <%= user.email %>
+              <i class="fas fa-user me-1"></i> <%= user.email %>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
               <li><a class="dropdown-item" href="/users/logout"><i class="fas fa-sign-out-alt fa-fw me-2"></i>Cerrar Sesión</a></li>

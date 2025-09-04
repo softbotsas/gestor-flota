@@ -17,7 +17,6 @@
   <%- include('../partials/navigation') %>
 
   <main class="container p-4">
-    <!-- Parcial para mostrar mensajes de éxito/error -->
     <%- include('../partials/messages') %>
     <%- body %>
   </main>
@@ -36,7 +35,7 @@
           <div id="notificationsList"></div>
         </div>
         <div class="modal-footer">
-          <a href="/reports/maintenance#upcoming" class="btn btn-danger">Ver todos en Mantenimientos</a>
+          <a href="/reports/maintenance#upcoming" class="btn btn-danger">Ver Agenda Completa</a>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         </div>
       </div>
@@ -46,6 +45,8 @@
   <!-- ======================================================= -->
   <!-- ======================== SCRIPTS ====================== -->
   <!-- ======================================================= -->
+  
+  <!-- Scripts de Librerías -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="/js/viewer.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -53,42 +54,48 @@
   <!-- Script Global de la Aplicación (SOLO NOTIFICACIONES) -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // --- LÓGICA DE NOTIFICACIONES ---
+      // --- MÓDULO DE NOTIFICACIONES (CORREGIDO) ---
       const notificationsBtn = document.getElementById('notificationsBellBtn');
       const notificationsListDiv = document.getElementById('notificationsList');
       
       if (notificationsBtn) {
         notificationsBtn.addEventListener('click', async () => {
-          notificationsListDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-danger" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+          notificationsListDiv.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-danger" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
           try {
             const response = await fetch('/api/notifications');
             const data = await response.json();
+            
             if (data.success && data.notifications.length > 0) {
               notificationsListDiv.innerHTML = '<div class="list-group list-group-flush"></div>';
               const listGroup = notificationsListDiv.querySelector('.list-group');
+              
               data.notifications.forEach(notif => {
-                const title = notif.eventName || `Servicio programado`;
+                const title = notif.eventName || notif.type || `Servicio programado`;
+                
+                // ¡ENLACE CORREGIDO! Apunta a la página de detalles y pasa el parámetro 'highlight'
+                const linkHref = `/trucks/${notif.truck._id}?highlight=${notif._id}`;
+
                 const notificationHTML = `
-                  <a href="/trucks/${notif.truck._id}?action=complete&serviceId=${notif._id}" class="list-group-item list-group-item-action">
+                  <a href="${linkHref}" class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                       <h6 class="mb-1 fw-bold">${notif.truck.alias || notif.truck.placa}</h6>
                       <small class="text-danger">${new Date(notif.nextServiceDate).toLocaleDateString('es-ES')}</small>
                     </div>
-                    <p class="mb-1"><strong>${title}</strong>.</p>
+                    <p class="mb-1"><strong>${title}</strong> programado.</p>
                   </a>`;
                 listGroup.insertAdjacentHTML('beforeend', notificationHTML);
               });
             } else {
-              notificationsListDiv.innerHTML = '<p class="text-center text-muted mt-3">No hay notificaciones activas.</p>';
+              notificationsListDiv.innerHTML = '<p class="text-center text-muted mt-3">No hay notificaciones activas en este momento.</p>';
             }
           } catch (error) {
             console.error('Error al cargar notificaciones:', error);
-            notificationsListDiv.innerHTML = '<p class="text-center text-danger mt-3">No se pudieron cargar.</p>';
+            notificationsListDiv.innerHTML = '<p class="text-center text-danger mt-3">No se pudieron cargar las notificaciones.</p>';
           }
         });
       }
 
-      // --- LÓGICA DE CONTEO DE NOTIFICACIONES ---
+      // --- MÓDULO DE CONTEO DE NOTIFICACIONES ---
       (async function fetchNotificationCount() {
         try {
           const response = await fetch('/api/notifications/count');

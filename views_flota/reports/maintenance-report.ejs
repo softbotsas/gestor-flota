@@ -51,6 +51,7 @@
                 <div id="collapseReport<%= index %>" class="accordion-collapse collapse" data-bs-parent="#maintenanceReportAccordion">
                   <div class="accordion-body">
                     <% if (event.mechanicName) { %><p class="mb-2 text-muted"><strong>Mecánico:</strong> <%= event.mechanicName %></p><% } %>
+                    <% if (event.driver) { %><p class="mb-2 text-muted"><strong>Conductor:</strong> <a href="/drivers/<%= event.driver._id %>" class="text-decoration-none"><%= event.driver.name %></a></p><% } %>
                     <ul class="list-group list-group-flush mb-3"><% event.serviceItems.forEach(function(item) { %><li class="list-group-item d-flex justify-content-between align-items-center px-0"><div><strong><%= item.type %></strong><% if (item.brand) { %><small class="d-block text-muted">Marca: <%= item.brand %></small><% } %></div><span class="fw-bold"><%= event.currency === 'GTQ' ? 'Q' : '$' %><%= Number(item.cost).toFixed(2) %></span></li><% }); %></ul>
                     <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
                       <strong class="text-danger fs-5">TOTAL: <%= event.currency === 'GTQ' ? 'Q' : '$' %><%= event.totalCost.toFixed(2) %></strong>

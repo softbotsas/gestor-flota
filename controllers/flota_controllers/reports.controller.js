@@ -1,9 +1,9 @@
 // controllers/reports.controller.js (COMPLETO, VERIFICADO Y SIN OMISIONES)
 const reportsCtrl = {};
-const Maintenance = require('../models/Maintenance');
-const Fuel = require('../models/Fuel');
-const Truck = require('../models/Truck');
-const OperationType = require('../models/OperationType');
+const Maintenance = require('../../models/flota_models/Maintenance');
+const Fuel = require('../../models/flota_models/Fuel');
+const Truck = require('../../models/flota_models/Truck');
+const OperationType = require('../../models/flota_models/OperationType');
 const xlsx = require('xlsx');
 const PdfPrinter = require('pdfmake');
 const fs = require('fs'); // ¡LÍNEA CRÍTICA CORREGIDA!
@@ -47,10 +47,10 @@ reportsCtrl.renderReportsHub = async (req, res) => {
     let fuelRecords = [];
 
     if (expenseType === 'all' || expenseType === 'maintenance') {
-      maintenanceRecords = await Maintenance.find(maintenanceQuery).populate('truck', 'placa alias').lean();
+      maintenanceRecords = await Maintenance.find(maintenanceQuery).populate('truck', 'placa alias').populate('driver', 'name').lean();
     }
     if (expenseType === 'all' || expenseType === 'fuel') {
-      fuelRecords = await Fuel.find(fuelQuery).populate('truck', 'placa alias').lean();
+      fuelRecords = await Fuel.find(fuelQuery).populate('truck', 'placa alias').populate('driver', 'name').lean();
     }
 
     const allRecords = [...maintenanceRecords, ...fuelRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -100,7 +100,7 @@ reportsCtrl.renderMaintenanceReport = async (req, res) => {
       end.setUTCHours(23, 59, 59, 999);
       query.date = { $gte: start, $lte: end };
     }
-    const allMaintenances = await Maintenance.find(query).populate('truck', 'placa alias').sort({ date: 'desc' }).lean();
+    const allMaintenances = await Maintenance.find(query).populate('truck', 'placa alias').populate('driver', 'name').sort({ date: 'desc' }).lean();
     const totalCosts = allMaintenances.reduce((totals, maint) => {
       const currency = maint.currency || 'GTQ';
       if (!totals[currency]) { totals[currency] = 0; }
@@ -110,7 +110,7 @@ reportsCtrl.renderMaintenanceReport = async (req, res) => {
     const [trucks, operationTypes, upcomingServices] = await Promise.all([
       Truck.find({}).sort({ alias: 'asc' }).lean(),
       OperationType.find().sort({ name: 'asc' }).lean(),
-      Maintenance.find({ isActive: true, isCompleted: false, nextServiceDate: { $gte: new Date() } }).populate('truck', 'placa alias').sort({ nextServiceDate: 'asc' }).lean()
+      Maintenance.find({ isActive: true, isCompleted: false, nextServiceDate: { $gte: new Date() } }).populate('truck', 'placa alias').populate('driver', 'name').sort({ nextServiceDate: 'asc' }).lean()
     ]);
     res.render('reports/maintenance-report', { layout: 'layouts/main', maintenances: allMaintenances, trucks, operationTypes, totalCosts, upcomingServices, filters: req.query });
   } catch (error) {
@@ -130,11 +130,11 @@ reportsCtrl.exportToExcel = async (req, res) => {
         if (truck) { maintenanceQuery.truck = truck; fuelQuery.truck = truck; }
         if (expenseType === 'maintenance' && opType) { maintenanceQuery['serviceItems.type'] = opType; }
         let maintenanceRecords = []; let fuelRecords = [];
-        if (expenseType === 'all' || expenseType === 'maintenance') { maintenanceRecords = await Maintenance.find(maintenanceQuery).populate('truck', 'placa alias').lean(); }
-        if (expenseType === 'all' || expenseType === 'fuel') { fuelRecords = await Fuel.find(fuelQuery).populate('truck', 'placa alias').lean(); }
+        if (expenseType === 'all' || expenseType === 'maintenance') { maintenanceRecords = await Maintenance.find(maintenanceQuery).populate('truck', 'placa alias').populate('driver', 'name').lean(); }
+        if (expenseType === 'all' || expenseType === 'fuel') { fuelRecords = await Fuel.find(fuelQuery).populate('truck', 'placa alias').populate('driver', 'name').lean(); }
         
-        const maintenanceDataForSheet = maintenanceRecords.flatMap(event => event.serviceItems.map(item => ({ 'Camión': event.truck.alias || event.truck.placa, 'Nombre del Servicio': event.eventName, 'Fecha': new Date(event.date).toLocaleDateString('es-ES'), 'Kilometraje': event.mileage, 'Mecánico': event.mechanicName || 'N/A', 'Ítem de Servicio': item.type, 'Marca del Ítem': item.brand || 'N/A', 'Costo del Ítem': item.cost, 'Moneda': event.currency, 'Detalles del Ítem': item.details || '' })));
-        const fuelDataForSheet = fuelRecords.map(rec => ({ 'Camión': rec.truck.alias || rec.truck.placa, 'Fecha': new Date(rec.date).toLocaleDateString('es-ES'), 'Kilometraje': rec.mileage, 'Cantidad': rec.quantity, 'Unidad': rec.unit, 'Precio por Unidad': rec.pricePerUnit, 'Costo Total': rec.cost, 'Moneda': rec.currency }));
+        const maintenanceDataForSheet = maintenanceRecords.flatMap(event => event.serviceItems.map(item => ({ 'Camión': event.truck.alias || event.truck.placa, 'Nombre del Servicio': event.eventName, 'Fecha': new Date(event.date).toLocaleDateString('es-ES'), 'Kilometraje': event.mileage, 'Mecánico': event.mechanicName || 'N/A', 'Conductor': event.driver ? event.driver.name : 'N/A', 'Ítem de Servicio': item.type, 'Marca del Ítem': item.brand || 'N/A', 'Costo del Ítem': item.cost, 'Moneda': event.currency, 'Detalles del Ítem': item.details || '' })));
+        const fuelDataForSheet = fuelRecords.map(rec => ({ 'Camión': rec.truck.alias || rec.truck.placa, 'Fecha': new Date(rec.date).toLocaleDateString('es-ES'), 'Kilometraje': rec.mileage, 'Conductor': rec.driver ? rec.driver.name : 'N/A', 'Cantidad': rec.quantity, 'Unidad': rec.unit, 'Precio por Unidad': rec.pricePerUnit, 'Costo Total': rec.cost, 'Moneda': rec.currency }));
         
         const workbook = xlsx.utils.book_new();
         if (maintenanceDataForSheet.length > 0) { const ws = xlsx.utils.json_to_sheet(maintenanceDataForSheet); xlsx.utils.book_append_sheet(workbook, ws, "Mantenimientos"); }
@@ -164,8 +164,8 @@ reportsCtrl.exportToPdf = async (req, res) => {
         if (expenseType === 'maintenance' && opType) { maintenanceQuery['serviceItems.type'] = opType; }
         
         let maintenanceRecords = []; let fuelRecords = [];
-        if (expenseType === 'all' || expenseType === 'maintenance') { maintenanceRecords = await Maintenance.find(maintenanceQuery).populate('truck', 'placa alias').lean(); }
-        if (expenseType === 'all' || expenseType === 'fuel') { fuelRecords = await Fuel.find(fuelQuery).populate('truck', 'placa alias').lean(); }
+        if (expenseType === 'all' || expenseType === 'maintenance') { maintenanceRecords = await Maintenance.find(maintenanceQuery).populate('truck', 'placa alias').populate('driver', 'name').lean(); }
+        if (expenseType === 'all' || expenseType === 'fuel') { fuelRecords = await Fuel.find(fuelQuery).populate('truck', 'placa alias').populate('driver', 'name').lean(); }
         
         const fonts = { Roboto: { normal: path.join(process.cwd(), 'fonts/Roboto-Regular.ttf'), bold: path.join(process.cwd(), 'fonts/Roboto-Medium.ttf'), italics: path.join(process.cwd(), 'fonts/Roboto-Italic.ttf'), bolditalics: path.join(process.cwd(), 'fonts/Roboto-MediumItalic.ttf') }};
         const printer = new PdfPrinter(fonts);
@@ -178,8 +178,8 @@ reportsCtrl.exportToPdf = async (req, res) => {
             console.warn(`Advertencia: No se encontró el archivo del logo en ${logoPath}`);
         }
         
-        const maintenanceBody = maintenanceRecords.flatMap(event => event.serviceItems.map(item => [{ text: event.truck.alias || event.truck.placa }, { text: event.eventName }, { text: new Date(event.date).toLocaleDateString('es-ES') }, { text: item.type }, { text: item.cost.toFixed(2), alignment: 'right' }, { text: event.currency, alignment: 'center' }]));
-        const fuelBody = fuelRecords.map(rec => [{ text: rec.truck.alias || rec.truck.placa }, { text: new Date(rec.date).toLocaleDateString('es-ES') }, { text: `${rec.quantity.toFixed(2)} ${rec.unit}` }, { text: rec.cost.toFixed(2), alignment: 'right' }, { text: rec.currency, alignment: 'center' }]);
+        const maintenanceBody = maintenanceRecords.flatMap(event => event.serviceItems.map(item => [{ text: event.truck.alias || event.truck.placa }, { text: event.eventName }, { text: new Date(event.date).toLocaleDateString('es-ES') }, { text: event.driver ? event.driver.name : 'N/A' }, { text: item.type }, { text: item.cost.toFixed(2), alignment: 'right' }, { text: event.currency, alignment: 'center' }]));
+        const fuelBody = fuelRecords.map(rec => [{ text: rec.truck.alias || rec.truck.placa }, { text: new Date(rec.date).toLocaleDateString('es-ES') }, { text: rec.driver ? rec.driver.name : 'N/A' }, { text: `${rec.quantity.toFixed(2)} ${rec.unit}` }, { text: rec.cost.toFixed(2), alignment: 'right' }, { text: rec.currency, alignment: 'center' }]);
         
         const docDefinition = {
             header: { columns: [ logoBase64 ? { image: `data:image/png;base64,${logoBase64}`, width: 60, margin: [40, 20, 0, 0] } : {text: ''}, { text: 'Reporte de Gastos de Flota', style: 'header', alignment: 'right', margin: [0, 25, 40, 0] } ]},
@@ -191,12 +191,12 @@ reportsCtrl.exportToPdf = async (req, res) => {
         
         if (maintenanceRecords.length > 0) {
             docDefinition.content.push({ text: 'Mantenimientos', style: 'h2' });
-            docDefinition.content.push({ table: { headerRows: 1, widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto'], body: [[{text: 'Camión', bold: true}, {text: 'Servicio', bold: true}, {text: 'Fecha', bold: true}, {text: 'Ítem', bold: true}, {text: 'Costo', bold: true, alignment: 'right'}, {text: 'Moneda', bold: true, alignment: 'center'}], ...maintenanceBody] }, layout: 'lightHorizontalLines' });
+            docDefinition.content.push({ table: { headerRows: 1, widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto'], body: [[{text: 'Camión', bold: true}, {text: 'Servicio', bold: true}, {text: 'Fecha', bold: true}, {text: 'Conductor', bold: true}, {text: 'Ítem', bold: true}, {text: 'Costo', bold: true, alignment: 'right'}, {text: 'Moneda', bold: true, alignment: 'center'}], ...maintenanceBody] }, layout: 'lightHorizontalLines' });
         }
         if (fuelRecords.length > 0) {
             if (maintenanceRecords.length > 0) docDefinition.content.push({ text: '', pageBreak: 'before' });
             docDefinition.content.push({ text: 'Combustible', style: 'h2' });
-            docDefinition.content.push({ table: { headerRows: 1, widths: ['*', 'auto', 'auto', 'auto', 'auto'], body: [[{text: 'Camión', bold: true}, {text: 'Fecha', bold: true}, {text: 'Cantidad', bold: true}, {text: 'Costo', bold: true, alignment: 'right'}, {text: 'Moneda', bold: true, alignment: 'center'}], ...fuelBody] }, layout: 'lightHorizontalLines' });
+            docDefinition.content.push({ table: { headerRows: 1, widths: ['*', 'auto', 'auto', 'auto', 'auto', 'auto'], body: [[{text: 'Camión', bold: true}, {text: 'Fecha', bold: true}, {text: 'Conductor', bold: true}, {text: 'Cantidad', bold: true}, {text: 'Costo', bold: true, alignment: 'right'}, {text: 'Moneda', bold: true, alignment: 'center'}], ...fuelBody] }, layout: 'lightHorizontalLines' });
         }
         if(maintenanceRecords.length === 0 && fuelRecords.length === 0) {
             docDefinition.content.push({ text: 'No se encontraron registros para los filtros seleccionados.', alignment: 'center', margin: [0, 50, 0, 0], fontSize: 12 });

@@ -28,6 +28,10 @@ const TruckSchema = new Schema({
     required: false, // Este campo es opcional
     trim: true
   },
+  documents: {
+    circulationCard: { type: String, required: false },
+    yearSticker: { type: String, required: false }
+  },
     // ¡NUEVO CAMPO!
   status: {
     type: String,

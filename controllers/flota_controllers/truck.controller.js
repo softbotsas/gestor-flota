@@ -3,13 +3,15 @@
 const truckCtrl = {};
 
 // Importamos todos los modelos necesarios
-const Truck = require('../models/Truck');
-const Maintenance = require('../models/Maintenance');
-const OperationType = require('../models/OperationType');
+const Truck = require('../../models/flota_models/Truck');
+const Maintenance = require('../../models/flota_models/Maintenance');
+const OperationType = require('../../models/flota_models/OperationType');
+const Driver = require('../../models/flota_models/Driver');
 
 // Importamos los módulos para manejar archivos
 const fs = require('fs').promises; 
 const path = require('path');
+const { uploadFields } = require('../../libs/storage');
 
 // --- MÉTODO PARA RENDERIZAR LA PÁGINA PRINCIPAL DE LA FLOTA ---
 truckCtrl.renderTrucksPage = async (req, res) => {
@@ -53,10 +55,11 @@ truckCtrl.createTruck = async (req, res) => {
 truckCtrl.renderTruckDetails = async (req, res) => {
   try {
     const truckId = req.params.id;
-    const [truck, maintenances, operationTypes] = await Promise.all([
+    const [truck, maintenances, operationTypes, drivers] = await Promise.all([
       Truck.findById(truckId).lean(),
-      Maintenance.find({ truck: truckId, isActive: true }).sort({ date: 'desc' }).lean(),
-      OperationType.find().sort({ name: 'asc' }).lean()
+      Maintenance.find({ truck: truckId, isActive: true }).populate('driver','name').sort({ date: 'desc' }).lean(),
+      OperationType.find().sort({ name: 'asc' }).lean(),
+      Driver.find({ isActive: true }).sort({ name: 'asc' }).lean()
     ]);
 
     if (!truck) {
@@ -66,7 +69,8 @@ truckCtrl.renderTruckDetails = async (req, res) => {
       layout: 'layouts/main',
       truck,
       maintenances,
-      operationTypes
+      operationTypes,
+      drivers
     });
   } catch (error) {
     console.error("Error en renderTruckDetails:", error);
@@ -80,7 +84,18 @@ truckCtrl.updateTruck = async (req, res) => {
   // Añadimos 'status' para que se guarde desde el formulario de edición.
   const { placa, marca, modelo, año, alias, status } = req.body;
   try {
-    await Truck.findByIdAndUpdate(id, { placa, marca, modelo, año, alias, status });
+    const update = { placa, marca, modelo, año, alias, status };
+    // Manejo de documentos si vienen en la petición (cuando se usa el modal de documentos)
+    if (req.files && (req.files.circulationCard || req.files.yearSticker)) {
+      update.documents = {};
+      if (req.files.circulationCard && req.files.circulationCard[0]) {
+        update.documents.circulationCard = '/uploads/' + req.files.circulationCard[0].filename;
+      }
+      if (req.files.yearSticker && req.files.yearSticker[0]) {
+        update.documents.yearSticker = '/uploads/' + req.files.yearSticker[0].filename;
+      }
+    }
+    await Truck.findByIdAndUpdate(id, update);
     res.redirect(`/trucks/${id}`);
   } catch (error) {
     console.error("Error al actualizar el camión:", error);

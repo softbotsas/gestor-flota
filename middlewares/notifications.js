@@ -1,5 +1,5 @@
 // middlewares/notifications.js
-const Maintenance = require('../models/Maintenance');
+const Maintenance = require('../models/flota_models/Maintenance');
 
 const notificationsMiddleware = async (req, res, next) => {
   const today = new Date();

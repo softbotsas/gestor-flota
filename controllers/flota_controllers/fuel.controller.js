@@ -1,19 +1,24 @@
 // controllers/fuel.controller.js (COMPLETO Y VERIFICADO)
 const fuelCtrl = {};
-const Fuel = require('../models/Fuel');
-const Truck = require('../models/Truck');
+const Fuel = require('../../models/flota_models/Fuel');
+const Truck = require('../../models/flota_models/Truck');
 
 // --- RENDERIZAR LA PÁGINA PRINCIPAL DE COMBUSTIBLE ---
 fuelCtrl.renderFuelPage = async (req, res) => {
   try {
-    const [fuelRecords, trucks] = await Promise.all([
-      Fuel.find({ isActive: true }).populate('truck', 'placa alias').sort({ date: 'desc' }).limit(50).lean(),
-      Truck.find({ status: 'Activo' }).sort({ alias: 'asc' }).lean() // Asumiendo futuro status
+  const [fuelRecords, trucks, drivers] = await Promise.all([
+      Fuel.find({ isActive: true })
+        .populate('truck', 'placa alias')
+        .populate('driver', 'name')
+        .sort({ date: 'desc' }).limit(50).lean(),
+      Truck.find({ status: 'Activo' }).sort({ alias: 'asc' }).lean(),
+      require('../../models/flota_models/Driver').find({ isActive: true }).sort({ name: 'asc' }).lean()
     ]);
     res.render('fuel/fuel-log', {
       layout: 'layouts/main',
       fuelRecords,
-      trucks
+      trucks,
+      drivers
     });
   } catch (error) {
     console.error("Error al renderizar la página de combustible:", error);
@@ -23,11 +28,12 @@ fuelCtrl.renderFuelPage = async (req, res) => {
 
 // --- CREAR UN NUEVO REGISTRO DE COMBUSTIBLE ---
 fuelCtrl.createFuelRecord = async (req, res) => {
-  const { truck, date, mileage, quantity, unit, cost, pricePerUnit, currency } = req.body;
+  const { truck, driver, date, mileage, quantity, unit, cost, pricePerUnit, currency } = req.body;
+  if (!driver) { return res.status(400).send('Error: Debe seleccionar un conductor.'); }
   if (!req.file) { return res.status(400).send('Error: Se requiere el comprobante.'); }
   try {
     const newFuelRecord = new Fuel({
-      truck, date, mileage, quantity, unit, cost, pricePerUnit, currency,
+      truck, driver, date, mileage, quantity, unit, cost, pricePerUnit, currency,
       receiptImage: '/uploads/' + req.file.filename
     });
     await newFuelRecord.save();

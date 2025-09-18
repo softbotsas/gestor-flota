@@ -8,7 +8,7 @@ const {
   renderMaintenanceReport, 
   exportToExcel, 
   exportToPdf                // <-- La función que faltaba
-} = require('../controllers/reports.controller');
+} = require('../../controllers/flota_controllers/reports.controller');
 
 // RUTA 1: La página principal del "Centro de Reportes"
 router.get('/', renderReportsHub);

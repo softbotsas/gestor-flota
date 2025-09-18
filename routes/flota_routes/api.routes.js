@@ -11,11 +11,11 @@ const {
   getTrucks,
   getOperationTypes,
   getMonthlyExpensesChartData 
-} = require('../controllers/api.controller');
+} = require('../../controllers/api.controller');
 
 // --- Importación desde el Controlador de Tipos de Operación ---
 // Aquí importamos la función que CREA datos.
-const { createOperationType } = require('../controllers/operationType.controller');
+const { createOperationType } = require('../../controllers/flota_controllers/operationType.controller');
 
 
 // === Rutas de LECTURA (GET) ===

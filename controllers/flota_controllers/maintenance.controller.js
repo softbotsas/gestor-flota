@@ -1,6 +1,6 @@
 // controllers/maintenance.controller.js (ADAPTADO PARA 'mechanicName')
 const maintenanceCtrl = {};
-const Maintenance = require('../models/Maintenance');
+const Maintenance = require('../../models/flota_models/Maintenance');
 
 // --- CREAR UN NUEVO SERVICIO ---
 maintenanceCtrl.createMaintenance = async (req, res) => {
@@ -8,8 +8,9 @@ maintenanceCtrl.createMaintenance = async (req, res) => {
   // Añadimos 'mechanicName' a la lista de datos extraídos.
   const { 
     eventName, date, mileage, currency, nextServiceDate, 
-    reminderDays, serviceItems, completedServiceId, mechanicName
+    reminderDays, serviceItems, completedServiceId, mechanicName, driver
   } = req.body;
+  if (!driver) { return res.status(400).send('Error: Debe seleccionar un conductor.'); }
 
   try {
     const parsedItems = JSON.parse(serviceItems);
@@ -18,6 +19,7 @@ maintenanceCtrl.createMaintenance = async (req, res) => {
     const newMaintenance = new Maintenance({
       truck: truckId,
       eventName, date, mileage, currency, totalCost,
+      driver,
       mechanicName, // <-- Se añade aquí
       nextServiceDate: nextServiceDate || null,
       reminderDays: reminderDays || null,
@@ -44,7 +46,7 @@ maintenanceCtrl.updateMaintenance = async (req, res) => {
   // Añadimos 'mechanicName' a la lista.
   const { 
     eventName, date, mileage, currency, nextServiceDate, 
-    reminderDays, serviceItems, mechanicName
+    reminderDays, serviceItems, mechanicName, driver
   } = req.body;
 
   try {
@@ -53,6 +55,7 @@ maintenanceCtrl.updateMaintenance = async (req, res) => {
 
     let updateData = {
       eventName, date, mileage, currency, totalCost,
+      driver: driver,
       mechanicName, // <-- Se añade aquí
       nextServiceDate: nextServiceDate || null,
       reminderDays: reminderDays || null,

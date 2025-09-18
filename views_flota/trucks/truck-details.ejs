@@ -13,6 +13,21 @@
     <a href="/trucks" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Volver a la Flota</a>
   </div>
 </div>
+<!-- Modal para DOCUMENTOS DEL CAMIÓN -->
+<div class="modal fade" id="truckDocsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-file me-2"></i>Documentos del Vehículo</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="truckDocsForm" action="/trucks/update/<%= truck._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+          <div class="mb-3"><label class="form-label">Tarjeta de circulación</label><input type="file" class="form-control" name="circulationCard" accept="image/*,application/pdf"></div>
+          <div class="mb-3"><label class="form-label">Calcomanía del año</label><input type="file" class="form-control" name="yearSticker" accept="image/*,application/pdf"></div>
+          <div class="text-end"><button class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="row">
   <!-- Columna de Ficha Técnica -->
@@ -26,6 +41,50 @@
           <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Modelo:</strong><span><%= truck.modelo %></span></li>
           <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Año:</strong><span><%= truck.año %></span></li>
           <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Alias:</strong><span><%= truck.alias || 'No especificado' %></span></li>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <strong>Documentos</strong>
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#truckDocsModal"><i class="fas fa-file-upload me-1"></i> Gestionar</button>
+            </div>
+            <div class="mt-2 d-flex gap-3 flex-wrap">
+              <div>
+                <div class="small text-muted mb-1">Tarjeta de circulación</div>
+                <% if (truck.documents && truck.documents.circulationCard) { %>
+                  <% if (truck.documents.circulationCard.endsWith('.pdf')) { %>
+                    <a href="<%= truck.documents.circulationCard %>" target="_blank" class="text-decoration-none">
+                      <div class="border rounded p-3 d-flex align-items-center gap-2" style="width: 180px;">
+                        <i class="fas fa-file-pdf text-danger fa-2x"></i><span class="small">Abrir PDF</span>
+                      </div>
+                    </a>
+                  <% } else { %>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#imageViewerModal" data-image-url="<%= truck.documents.circulationCard %>" class="d-inline-block">
+                      <img src="<%= truck.documents.circulationCard %>" alt="Tarjeta" class="img-thumbnail" style="width: 180px; height: 110px; object-fit: cover;">
+                    </a>
+                  <% } %>
+                <% } else { %>
+                  <div class="text-muted">No disponible</div>
+                <% } %>
+              </div>
+              <div>
+                <div class="small text-muted mb-1">Calcomanía del año</div>
+                <% if (truck.documents && truck.documents.yearSticker) { %>
+                  <% if (truck.documents.yearSticker.endsWith('.pdf')) { %>
+                    <a href="<%= truck.documents.yearSticker %>" target="_blank" class="text-decoration-none">
+                      <div class="border rounded p-3 d-flex align-items-center gap-2" style="width: 180px;">
+                        <i class="fas fa-file-pdf text-danger fa-2x"></i><span class="small">Abrir PDF</span>
+                      </div>
+                    </a>
+                  <% } else { %>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#imageViewerModal" data-image-url="<%= truck.documents.yearSticker %>" class="d-inline-block">
+                      <img src="<%= truck.documents.yearSticker %>" alt="Calcomanía" class="img-thumbnail" style="width: 180px; height: 110px; object-fit: cover;">
+                    </a>
+                  <% } %>
+                <% } else { %>
+                  <div class="text-muted">No disponible</div>
+                <% } %>
+              </div>
+            </div>
+          </li>
           <li class="list-group-item d-flex justify-content-between align-items-center"><strong>Registrado el:</strong><span><%= new Date(truck.createdAt).toLocaleDateString('es-ES') %></span></li>
         </ul>
       </div>
@@ -62,6 +121,7 @@
                       <strong class="text-danger fs-5">TOTAL: <%= service.currency === 'GTQ' ? 'Q' : '$' %><%= service.totalCost.toFixed(2) %></strong>
                       <div>
                         <% if (service.receiptImage) { %><button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#imageViewerModal" data-image-url="<%= service.receiptImage %>"><i class="fas fa-receipt"></i> Recibo</button><% } %>
+                        <% if (service.driver) { %><span class="badge bg-secondary ms-2">Conductor: <%= service.driver.name %></span><% } %>
                         <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editMaintenanceModal" data-service='<%- JSON.stringify(service) %>'><i class="fas fa-pencil-alt"></i> Editar</button>
                         <form action="/maintenance/delete/<%= service._id %>?_method=DELETE" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar este servicio?');"><button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Eliminar</button></form>
                       </div>
@@ -93,6 +153,7 @@
             <div class="col-md-4"><div class="mb-3"><label for="addEventMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="addEventMileage" placeholder="200000" required></div></div>
             <div class="col-md-4"><div class="mb-3"><label for="addEventCurrency" class="form-label">Moneda</label><select name="currency" id="addEventCurrency" class="form-select"><option value="GTQ" selected>Quetzales (GTQ)</option><option value="USD">Dólares (USD)</option></select></div></div>
             <div class="col-md-4"><div class="mb-3"><label for="addMechanicName" class="form-label">Mecánico (Opcional)</label><input type="text" class="form-control" name="mechanicName" id="addMechanicName" placeholder="Ej: Juan Pérez"></div></div>
+            <div class="col-md-4"><div class="mb-3"><label for="addDriverSelect" class="form-label">Conductor</label><select name="driver" id="addDriverSelect" class="form-select" required><option value="" selected disabled>-- Seleccione --</option><% if (drivers && drivers.length) { drivers.forEach(function(d){ %><option value="<%= d._id %>"><%= d.name %></option><% }) } %></select></div></div>
           </div>
           <div class="mb-3"><label for="addEventReceipt" class="form-label">Recibo General (Opcional)</label><input class="form-control" type="file" name="image" id="addEventReceipt" accept="image/*"></div>
           <hr>
@@ -134,6 +195,7 @@
                         <div class="col-md-4"><div class="mb-3"><label for="editEventMileage" class="form-label">Kilometraje</label><input type="number" class="form-control" name="mileage" id="editEventMileage" required></div></div>
                         <div class="col-md-4"><div class="mb-3"><label for="editEventCurrency" class="form-label">Moneda</label><select name="currency" id="editEventCurrency" class="form-select"><option value="GTQ">Quetzales (GTQ)</option><option value="USD">Dólares (USD)</option></select></div></div>
                         <div class="col-md-4"><div class="mb-3"><label for="editMechanicName" class="form-label">Mecánico (Opcional)</label><input type="text" class="form-control" name="mechanicName" id="editMechanicName"></div></div>
+                        <div class="col-md-4"><div class="mb-3"><label for="editDriverSelect" class="form-label">Conductor</label><select name="driver" id="editDriverSelect" class="form-select" required><option value="" disabled>-- Seleccione --</option><% if (drivers && drivers.length) { drivers.forEach(function(d){ %><option value="<%= d._id %>"><%= d.name %></option><% }) } %></select></div></div>
                     </div>
                     <div class="mb-3"><label for="editEventReceipt" class="form-label">Nuevo Recibo (Opcional)</label><input type="file" name="image" class="form-control" id="editEventReceipt" accept="image/*"><div class="form-text">Sube un archivo solo si quieres reemplazar el existente.</div></div>
                     <hr>
@@ -367,6 +429,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 currencyEl.value = serviceData.currency;
                 form.querySelector('[name="nextServiceDate"]').value = serviceData.nextServiceDate ? new Date(serviceData.nextServiceDate).toISOString().split('T')[0] : '';
                 form.querySelector('[name="reminderDays"]').value = serviceData.reminderDays || '';
+                const editDriverSelect = document.getElementById('editDriverSelect');
+                if (editDriverSelect) { editDriverSelect.value = serviceData.driver ? serviceData.driver._id : ''; }
                 if (serviceData.serviceItems && serviceData.serviceItems.length > 0) {
                     serviceData.serviceItems.forEach(item => addServiceItemRow(item));
                 } else {

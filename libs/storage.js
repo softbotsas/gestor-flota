@@ -15,11 +15,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Límite de 2MB por archivo
+  limits: { fileSize: 2 * 1024 * 1024 }, // Límite de 2MB por archivo
   fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif/;
+    const filetypes = /jpeg|jpg|png|gif|pdf/;
     const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname));
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     if (mimetype && extname) {
       return cb(null, true);
     }
@@ -27,4 +27,19 @@ const upload = multer({
   }
 }).single('image'); // 'image' es el nombre del campo <input type="file" name="image"> en el formulario
 
+// Helper para múltiples campos
+const uploadFields = (fields) => multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|gif|pdf/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) return cb(null, true);
+    cb("Error: El archivo debe ser una imagen o PDF válidos");
+  }
+}).fields(fields);
+
 module.exports = upload;
+module.exports.uploadSingle = upload;
+module.exports.uploadFields = uploadFields;

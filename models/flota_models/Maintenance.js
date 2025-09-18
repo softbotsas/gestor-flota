@@ -15,6 +15,11 @@ const MaintenanceSchema = new Schema({
     ref: 'Truck',
     required: true
   },
+  driver: {
+    type: Schema.Types.ObjectId,
+    ref: 'Driver',
+    required: false
+  },
   eventName: {
     type: String,
     required: true,

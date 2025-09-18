@@ -1,7 +1,7 @@
 // config/passport.js
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const User = require('../models/User');
+const User = require('../models/flota_models/User');
 
 passport.use(new LocalStrategy({
   usernameField: 'email',

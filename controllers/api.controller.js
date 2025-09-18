@@ -1,9 +1,9 @@
 // controllers/api.controller.js (COMPLETO Y VERIFICADO)
 const apiCtrl = {};
-const Maintenance = require('../models/Maintenance');
-const Fuel = require('../models/Fuel');
-const Truck = require('../models/Truck');
-const OperationType = require('../models/OperationType');
+const Maintenance = require('../models/flota_models/Maintenance');
+const Fuel = require('../models/flota_models/Fuel');
+const Truck = require('../models/flota_models/Truck');
+const OperationType = require('../models/flota_models/OperationType');
 const moment = require('moment');
 
 // --- Obtiene la lista de notificaciones activas ---

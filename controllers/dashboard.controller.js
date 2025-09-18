@@ -1,8 +1,8 @@
 // controllers/dashboard.controller.js (COMPLETO Y VERIFICADO)
 const dashboardCtrl = {};
-const Truck = require('../models/Truck');
-const Maintenance = require('../models/Maintenance');
-const Fuel = require('../models/Fuel');
+const Truck = require('../models/flota_models/Truck');
+const Maintenance = require('../models/flota_models/Maintenance');
+const Fuel = require('../models/flota_models/Fuel');
 const moment = require('moment'); // Asegúrate de haber hecho 'npm install moment'
 
 // --- FUNCIÓN PRINCIPAL PARA RENDERIZAR EL DASHBOARD ---

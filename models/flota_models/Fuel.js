@@ -7,6 +7,11 @@ const FuelSchema = new Schema({
     ref: 'Truck',
     required: true
   },
+  driver: {
+    type: Schema.Types.ObjectId,
+    ref: 'Driver',
+    required: false
+  },
   date: {
     type: Date,
     required: true

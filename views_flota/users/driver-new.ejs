@@ -1,0 +1,180 @@
+<% layout('layouts/main') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="h4 mb-0"><i class="fas fa-user-plus me-2"></i>Nuevo Conductor</h2>
+  <a href="/drivers" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Regresar</a>
+</div>
+
+<form action="/drivers/new" method="POST" enctype="multipart/form-data">
+  <!-- Información Personal -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-primary text-white">
+      <h6 class="m-0 font-weight-bold"><i class="fas fa-user me-2"></i>Información Personal</h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="name" class="form-label">Nombre Completo *</label>
+          <input type="text" class="form-control" name="name" id="name" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="phone" class="form-label">Teléfono</label>
+          <input type="tel" class="form-control" name="phone" id="phone">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Correo Electrónico</label>
+          <input type="email" class="form-control" name="email" id="email">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
+          <input type="date" class="form-control" name="birthDate" id="birthDate">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="bloodType" class="form-label">Tipo de Sangre</label>
+          <select class="form-select" name="bloodType" id="bloodType">
+            <option value="">Seleccionar...</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="status" class="form-label">Estado</label>
+          <select class="form-select" name="status" id="status">
+            <option value="activo">Activo</option>
+            <option value="vacaciones">Vacaciones</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contacto de Emergencia -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-warning text-dark">
+      <h6 class="m-0 font-weight-bold"><i class="fas fa-phone me-2"></i>Contacto de Emergencia</h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="emergencyContactName" class="form-label">Nombre del Contacto</label>
+          <input type="text" class="form-control" name="emergencyContactName" id="emergencyContactName">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="emergencyContactPhone" class="form-label">Teléfono</label>
+          <input type="tel" class="form-control" name="emergencyContactPhone" id="emergencyContactPhone">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="emergencyContactRelationship" class="form-label">Parentesco</label>
+          <input type="text" class="form-control" name="emergencyContactRelationship" id="emergencyContactRelationship" placeholder="Ej: Esposa, Padre, Hermano">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dirección -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-info text-white">
+      <h6 class="m-0 font-weight-bold"><i class="fas fa-map-marker-alt me-2"></i>Dirección</h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-8 mb-3">
+          <label for="addressStreet" class="form-label">Dirección</label>
+          <input type="text" class="form-control" name="addressStreet" id="addressStreet" placeholder="Calle, número, zona">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="addressCity" class="form-label">Ciudad</label>
+          <input type="text" class="form-control" name="addressCity" id="addressCity">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="addressDepartment" class="form-label">Departamento</label>
+          <input type="text" class="form-control" name="addressDepartment" id="addressDepartment">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="addressPostalCode" class="form-label">Código Postal</label>
+          <input type="text" class="form-control" name="addressPostalCode" id="addressPostalCode">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información Laboral -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-success text-white">
+      <h6 class="m-0 font-weight-bold"><i class="fas fa-briefcase me-2"></i>Información Laboral</h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="license" class="form-label">Número de Licencia *</label>
+          <input type="text" class="form-control" name="license" id="license" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="licenseExpiry" class="form-label">Vencimiento de Licencia</label>
+          <input type="date" class="form-control" name="licenseExpiry" id="licenseExpiry">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="dpi" class="form-label">Número de DPI *</label>
+          <input type="text" class="form-control" name="dpi" id="dpi" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="position" class="form-label">Cargo</label>
+          <input type="text" class="form-control" name="position" id="position" value="Conductor">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentos -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-danger text-white">
+      <h6 class="m-0 font-weight-bold"><i class="fas fa-file-alt me-2"></i>Documentos</h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="licenseFile" class="form-label">Licencia de Conducir (Imagen o PDF)</label>
+          <input type="file" class="form-control" name="licenseFile" id="licenseFile" accept="image/*,application/pdf">
+          <div class="form-text">Archivos permitidos: JPG, PNG, GIF, PDF (Máx. 5MB)</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="dpiFile" class="form-label">Documento de Identificación (DPI) (Imagen o PDF)</label>
+          <input type="file" class="form-control" name="dpiFile" id="dpiFile" accept="image/*,application/pdf">
+          <div class="form-text">Archivos permitidos: JPG, PNG, GIF, PDF (Máx. 5MB)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información Médica -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-secondary text-white">
+      <h6 class="m-0 font-weight-bold"><i class="fas fa-heartbeat me-2"></i>Información Médica</h6>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label for="allergies" class="form-label">Alergias (separadas por comas)</label>
+        <input type="text" class="form-control" name="allergies" id="allergies" placeholder="Ej: Penicilina, Polen, Mariscos">
+        <div class="form-text">Escriba las alergias separadas por comas</div>
+      </div>
+      <div class="mb-3">
+        <label for="medicalNotes" class="form-label">Notas Médicas</label>
+        <textarea class="form-control" name="medicalNotes" id="medicalNotes" rows="3" placeholder="Información médica adicional, condiciones especiales, etc."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-grid mt-4">
+    <button type="submit" class="btn btn-danger btn-lg"><i class="fas fa-save me-2"></i>Guardar Conductor</button>
+  </div>
+</form>
+
+

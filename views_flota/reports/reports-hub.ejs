@@ -82,7 +82,7 @@
                             <h6 class="mb-1"><i class="fas fa-wrench text-danger me-2"></i> <strong><%= rec.truck.alias || rec.truck.placa %></strong> - <%= rec.eventName %></h6>
                             <small><%= new Date(rec.date).toLocaleDateString('es-ES') %></small>
                         </div>
-                        <p class="mb-1 small">Total: <span class="fw-bold"><%= rec.currency === 'GTQ' ? 'Q' : '$' %><%= rec.totalCost.toFixed(2) %></span> | <%= rec.serviceItems.length %> ítems</p>
+                        <p class="mb-1 small">Total: <span class="fw-bold"><%= rec.currency === 'GTQ' ? 'Q' : '$' %><%= rec.totalCost.toFixed(2) %></span> | <%= rec.serviceItems.length %> ítems<% if (rec.driver) { %> | Conductor: <a href="/drivers/<%= rec.driver._id %>" class="text-decoration-none"><%= rec.driver.name %></a><% } %></p>
                     </a>
                 <% } else { %> <!-- Es un registro de COMBUSTIBLE -->
                      <a href="/fuel" class="list-group-item list-group-item-action">
@@ -90,7 +90,7 @@
                              <h6 class="mb-1"><i class="fas fa-gas-pump text-success me-2"></i> <strong><%= rec.truck.alias || rec.truck.placa %></strong> - Recarga de Combustible</h6>
                              <small><%= new Date(rec.date).toLocaleDateString('es-ES') %></small>
                         </div>
-                        <p class="mb-1 small">Total: <span class="fw-bold"><%= rec.currency === 'GTQ' ? 'Q' : '$' %><%= rec.cost.toFixed(2) %></span> | <%= rec.quantity.toFixed(2) %> <%= rec.unit %></p>
+                        <p class="mb-1 small">Total: <span class="fw-bold"><%= rec.currency === 'GTQ' ? 'Q' : '$' %><%= rec.cost.toFixed(2) %></span> | <%= rec.quantity.toFixed(2) %> <%= rec.unit %><% if (rec.driver) { %> | Conductor: <a href="/drivers/<%= rec.driver._id %>" class="text-decoration-none"><%= rec.driver.name %></a><% } %></p>
                     </a>
                 <% } %>
             <% }); %>

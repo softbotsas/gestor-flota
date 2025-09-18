@@ -2,12 +2,12 @@
 
 const { Router } = require('express');
 const router = Router();
-const upload = require('../libs/storage');
+const upload = require('../../libs/storage');
 const { 
   createMaintenance,
   updateMaintenance, // <-- Nos aseguramos de que se importa
   deleteMaintenance 
-} = require('../controllers/maintenance.controller');
+} = require('../../controllers/flota_controllers/maintenance.controller');
 
 // Ruta para añadir (POST)
 router.post('/add/:truckId', upload, createMaintenance);

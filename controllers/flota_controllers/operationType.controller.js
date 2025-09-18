@@ -1,6 +1,6 @@
 // controllers/operationType.controller.js
 const opTypeCtrl = {};
-const OperationType = require('../models/OperationType');
+const OperationType = require('../../models/flota_models/OperationType');
 
 opTypeCtrl.createOperationType = async (req, res) => {
   const { name } = req.body;

@@ -1,0 +1,187 @@
+<% layout('layouts/main') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="h4 mb-0"><i class="fas fa-id-card me-2"></i><%= driver.name %></h2>
+    <small class="text-muted">Creado el <%= new Date(driver.createdAt).toLocaleDateString('es-ES') %></small>
+  </div>
+  <div>
+    <a href="/drivers/<%= driver._id %>/edit" class="btn btn-outline-primary"><i class="fas fa-pen me-2"></i>Editar</a>
+    <a href="/drivers" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Volver</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Información Personal -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h6 class="m-0"><i class="fas fa-user me-2"></i>Información Personal</h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between"><strong>Nombre</strong><span><%= driver.name %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Teléfono</strong><span><%= driver.phone || '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Email</strong><span><%= driver.email || '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Fecha de Nacimiento</strong><span><%= driver.birthDate ? new Date(driver.birthDate).toLocaleDateString('es-ES') : '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Tipo de Sangre</strong><span><%= driver.bloodType || '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Estado</strong><span class="badge bg-<%= driver.status === 'activo' ? 'success' : driver.status === 'vacaciones' ? 'warning' : driver.status === 'suspendido' ? 'danger' : 'secondary' %>"><%= driver.status || 'activo' %></span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contacto de Emergencia -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-warning text-dark">
+        <h6 class="m-0"><i class="fas fa-phone me-2"></i>Contacto de Emergencia</h6>
+      </div>
+      <div class="card-body">
+        <% if (driver.emergencyContact && (driver.emergencyContact.name || driver.emergencyContact.phone)) { %>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between"><strong>Nombre</strong><span><%= driver.emergencyContact.name || '—' %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><strong>Teléfono</strong><span><%= driver.emergencyContact.phone || '—' %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><strong>Parentesco</strong><span><%= driver.emergencyContact.relationship || '—' %></span></li>
+          </ul>
+        <% } else { %>
+          <p class="text-muted mb-0">No hay información de contacto de emergencia</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dirección -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white">
+        <h6 class="m-0"><i class="fas fa-map-marker-alt me-2"></i>Dirección</h6>
+      </div>
+      <div class="card-body">
+        <% if (driver.address && (driver.address.street || driver.address.city)) { %>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between"><strong>Dirección</strong><span><%= driver.address.street || '—' %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><strong>Ciudad</strong><span><%= driver.address.city || '—' %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><strong>Departamento</strong><span><%= driver.address.department || '—' %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><strong>Código Postal</strong><span><%= driver.address.postalCode || '—' %></span></li>
+          </ul>
+        <% } else { %>
+          <p class="text-muted mb-0">No hay información de dirección</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información Laboral -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white">
+        <h6 class="m-0"><i class="fas fa-briefcase me-2"></i>Información Laboral</h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between"><strong>Licencia</strong><span><%= driver.license || '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Vencimiento Licencia</strong><span><%= driver.licenseExpiry ? new Date(driver.licenseExpiry).toLocaleDateString('es-ES') : '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>DPI</strong><span><%= driver.dpi || '—' %></span></li>
+          <li class="list-group-item d-flex justify-content-between"><strong>Cargo</strong><span><%= driver.position || 'Conductor' %></span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentos -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-danger text-white">
+        <h6 class="m-0"><i class="fas fa-file-alt me-2"></i>Documentos</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex gap-3 flex-wrap">
+          <div>
+            <div class="small text-muted mb-1">Licencia</div>
+            <% if (driver.licenseFile) { %>
+              <% if (driver.licenseFile.endsWith('.pdf')) { %>
+                <a href="<%= driver.licenseFile %>" target="_blank" class="text-decoration-none">
+                  <div class="border rounded p-3 d-flex align-items-center gap-2" style="width: 180px;">
+                    <i class="fas fa-file-pdf text-danger fa-2x"></i>
+                    <span class="small">Abrir PDF</span>
+                  </div>
+                </a>
+              <% } else { %>
+                <button class="btn btn-outline-secondary btn-sm view-file-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#imageViewerModal"
+                        data-file-url="<%= driver.licenseFile %>"
+                        data-file-type="image"
+                        data-modal-title="Licencia - <%= driver.name %>">
+                  <img src="<%= driver.licenseFile %>" alt="Licencia" class="img-thumbnail" style="width: 180px; height: 110px; object-fit: cover;">
+                </button>
+              <% } %>
+            <% } else { %>
+              <div class="text-muted">No disponible</div>
+            <% } %>
+          </div>
+          <div>
+            <div class="small text-muted mb-1">DPI</div>
+            <% if (driver.dpiFile) { %>
+              <% if (driver.dpiFile.endsWith('.pdf')) { %>
+                <a href="<%= driver.dpiFile %>" target="_blank" class="text-decoration-none">
+                  <div class="border rounded p-3 d-flex align-items-center gap-2" style="width: 180px;">
+                    <i class="fas fa-file-pdf text-danger fa-2x"></i>
+                    <span class="small">Abrir PDF</span>
+                  </div>
+                </a>
+              <% } else { %>
+                <button class="btn btn-outline-secondary btn-sm view-file-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#imageViewerModal"
+                        data-file-url="<%= driver.dpiFile %>"
+                        data-file-type="image"
+                        data-modal-title="DPI - <%= driver.name %>">
+                  <img src="<%= driver.dpiFile %>" alt="DPI" class="img-thumbnail" style="width: 180px; height: 110px; object-fit: cover;">
+                </button>
+              <% } %>
+            <% } else { %>
+              <div class="text-muted">No disponible</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información Médica -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-secondary text-white">
+        <h6 class="m-0"><i class="fas fa-heartbeat me-2"></i>Información Médica</h6>
+      </div>
+      <div class="card-body">
+        <% if (driver.medicalInfo && (driver.medicalInfo.allergies?.length > 0 || driver.medicalInfo.medicalNotes)) { %>
+          <ul class="list-group list-group-flush">
+            <% if (driver.medicalInfo.allergies && driver.medicalInfo.allergies.length > 0) { %>
+              <li class="list-group-item">
+                <strong>Alergias:</strong>
+                <div class="mt-1">
+                  <% driver.medicalInfo.allergies.forEach(function(allergy) { %>
+                    <span class="badge bg-warning text-dark me-1"><%= allergy %></span>
+                  <% }); %>
+                </div>
+              </li>
+            <% } %>
+            <% if (driver.medicalInfo.medicalNotes) { %>
+              <li class="list-group-item">
+                <strong>Notas Médicas:</strong>
+                <p class="mb-0 mt-1"><%= driver.medicalInfo.medicalNotes %></p>
+              </li>
+            <% } %>
+          </ul>
+        <% } else { %>
+          <p class="text-muted mb-0">No hay información médica registrada</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+

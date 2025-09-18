@@ -21,6 +21,16 @@
               <% }); %>
             </select>
           </div>
+          <div class="mb-3">
+            <label for="addDriverSelect" class="form-label">Conductor</label>
+            <select name="driver" id="addDriverSelect" class="form-select" required>
+              <option value="" selected disabled>-- Seleccione --</option>
+              <% if (typeof drivers !== 'undefined') { drivers.forEach(function(d){ %>
+                <option value="<%= d._id %>"><%= d.name %></option>
+              <% }) } %>
+            </select>
+            <div class="form-text">Puedes crear conductores en "Conductores".</div>
+          </div>
           <div class="row">
             <div class="col-md-6 mb-3"><label for="addDate" class="form-label">Fecha de Recarga</label><input type="date" name="date" id="addDate" class="form-control" required></div>
             <div class="col-md-6 mb-3"><label for="addMileage" class="form-label">Kilometraje</label><input type="number" name="mileage" id="addMileage" class="form-control" placeholder="Ej: 150000" required></div>
@@ -59,6 +69,7 @@
               <div>
                 <p class="mb-1"><span class="fw-bold text-danger"><%= r.quantity.toFixed(2) %> <%= r.unit %></span> por <span class="fw-bold"><%= r.currency === 'GTQ' ? 'Q' : '$' %><%= r.cost.toFixed(2) %></span></p>
                 <small class="text-muted"><%= r.mileage.toLocaleString('es-ES') %> km &bull; <%= r.currency === 'GTQ' ? 'Q' : '$' %><%= r.pricePerUnit.toFixed(2) %> por <%= r.unit.slice(0, -2) %></small>
+                <% if (r.driver) { %><div><small class="text-muted">Conductor: <a href="/drivers/<%= r.driver._id %>"><%= r.driver.name %></a></small></div><% } %>
               </div>
 <!-- =================== REEMPLAZO (BOTONES EN fuel-log.ejs) =================== -->
               <div class="d-flex gap-1">
